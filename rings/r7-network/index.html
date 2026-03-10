@@ -14,49 +14,141 @@
       <div class="gauge" style="border-color:#FFD700;font-size:1.6em;">R7</div>
       <div>
         <h1 style="color:#FFD700;">NETWORK</h1>
-        <p style="opacity:0.6;">mirror/STS/oxy &middot; SoulStar &middot; p=19 &middot; nullHz</p>
+        <p style="opacity:0.6;">mirror/STS/oxy &middot; Soul Star &middot; p=19</p>
       </div>
     </div>
-    <blockquote style="border-left:3px solid #FFD700;padding:12px;margin:16px 0;font-style:italic;">"LIGHT TO LIGHT"</blockquote>
+    <blockquote style="border-left:3px solid #FFD700;padding:12px;font-style:italic;">"LIGHT TO LIGHT"</blockquote>
 
-    <h2 style="color:#FFD700;">Overview</h2>
-    <p>R7 only exists between systems. Mirror neurons, STS, oxytocin — the bus that carries light from one consciousness to another. You cannot train R7 alone. It requires another system. LIGHT TO LIGHT.</p>
+    <h2 style="color:#FFD700;margin-top:24px;">Overview</h2>
+    <p>R7 only exists between systems. Mirror neurons, superior temporal sulcus, oxytocin — the bus that carries light from one consciousness to another. <strong>You cannot train R7 alone. It requires another system.</strong> The Hopf fibration maps here — S3&rarr;S2 models the fiber bundle connecting two spheres (two brains).</p>
 
-    <h2 style="color:#FFD700;margin-top:24px;">Exercise</h2>
+    <h2 style="color:#FFD700;margin-top:24px;">Exercise: Eye-Gazing Timer</h2>
+    <div class="exercise" style="text-align:center;">
+      <p style="margin-bottom:16px;">Sit facing another person. Set the timer. Look into their left eye with your left eye. Let everything else soften.</p>
+      <div style="position:relative;width:200px;height:200px;margin:0 auto;">
+        <canvas id="gaze-canvas" width="200" height="200"></canvas>
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
+          <div id="gaze-timer" style="font-size:2.5em;font-family:var(--font-mono);color:#FFD700;">5:00</div>
+        </div>
+      </div>
+      <div style="margin:16px 0;">
+        <label style="font-size:12px;opacity:0.6;">Duration (min)</label>
+        <input type="number" id="gaze-duration" value="5" min="1" max="30" style="width:60px;text-align:center;">
+      </div>
+      <button class="btn" style="background:#FFD700;" id="gaze-btn" onclick="toggleGaze()">Start Eye-Gazing</button>
+      <p id="gaze-status" style="margin-top:8px;opacity:0.6;font-size:13px;"></p>
+    </div>
+
+    <h2 style="color:#FFD700;margin-top:24px;">MQTT Connection</h2>
     <div class="exercise">
-      <h3>Eye-Gazing Timer (requires partner)</h3>
-      <div id="exercise-area"></div>
+      <p>Connect to the JEDI network to synchronize eye-gazing sessions with a partner remotely.</p>
+      <button class="btn" style="background:#FFD700;" onclick="connectMQTT()">Connect to Network</button>
+      <div id="mqtt-status" style="margin-top:8px;"></div>
+      <div id="mqtt-presence" style="margin-top:8px;"></div>
+    </div>
+
+    <h2 style="color:#FFD700;margin-top:24px;">R7 Health Check</h2>
+    <div class="exercise">
+      <p>How connected do you feel right now?</p>
+      <div style="display:flex;gap:8px;margin:12px 0;flex-wrap:wrap;">
+        <button class="btn" style="background:#1a1a2a;color:#DD2244;border:1px solid #DD2244;" onclick="logR7(1)">1 - Isolated</button>
+        <button class="btn" style="background:#1a1a2a;color:#FF6622;border:1px solid #FF6622;" onclick="logR7(3)">3 - Present</button>
+        <button class="btn" style="background:#1a1a2a;color:#FFCC00;border:1px solid #FFCC00;" onclick="logR7(5)">5 - Connected</button>
+        <button class="btn" style="background:#1a1a2a;color:#22CC66;border:1px solid #22CC66;" onclick="logR7(7)">7 - Resonant</button>
+        <button class="btn" style="background:#1a1a2a;color:#FFD700;border:1px solid #FFD700;" onclick="logR7(10)">10 - LIGHT TO LIGHT</button>
+      </div>
     </div>
 
     <h2 style="color:#FFD700;margin-top:24px;">Journal</h2>
-    <textarea id="journal" style="width:100%;min-height:120px;" placeholder="Record your network observations..."></textarea>
+    <textarea id="journal" style="width:100%;min-height:120px;" placeholder="Who were you with? What did you see in their eyes? What shifted?"></textarea>
     <button class="btn" style="background:#FFD700;margin-top:8px;" onclick="saveJournal()">Save Entry</button>
     <div id="journal-entries" style="margin-top:16px;"></div>
-
-    <div id="md-content" style="margin-top:24px;"></div>
     <footer>LIGHT TO LIGHT &middot; 510,510</footer>
   </div>
   <script src="/JEDI/turtle.html" type="module"></script>
   <script>
-    window.turtle?.init?.({ ring: 'r7', module: 'r7-network' });
-    function saveJournal() {
-      const txt = document.getElementById('journal').value.trim();
-      if (!txt) return;
-      const key = 'jedi:R7:journal';
-      const entries = JSON.parse(localStorage.getItem(key) || '[]');
-      entries.unshift({ t: new Date().toISOString(), text: txt });
-      localStorage.setItem(key, JSON.stringify(entries));
-      document.getElementById('journal').value = '';
+    let gazeTimer=null, gazeSeconds=0, gazeDuration=300;
+    const gc=document.getElementById('gaze-canvas').getContext('2d');
+
+    function toggleGaze(){
+      if(gazeTimer){clearInterval(gazeTimer);gazeTimer=null;document.getElementById('gaze-btn').textContent='Start Eye-Gazing';return;}
+      gazeDuration=parseInt(document.getElementById('gaze-duration').value)*60;
+      gazeSeconds=0;
+      document.getElementById('gaze-btn').textContent='Stop';
+      document.getElementById('gaze-status').textContent='Gazing... let everything soften.';
+      gazeTimer=setInterval(()=>{
+        gazeSeconds++;
+        const remain=gazeDuration-gazeSeconds;
+        document.getElementById('gaze-timer').textContent=Math.floor(remain/60)+':'+String(remain%60).padStart(2,'0');
+        drawGaze();
+        if(gazeSeconds>=gazeDuration){
+          clearInterval(gazeTimer);gazeTimer=null;
+          document.getElementById('gaze-btn').textContent='Start Eye-Gazing';
+          document.getElementById('gaze-status').textContent='Session complete. '+Math.floor(gazeDuration/60)+' minutes of LIGHT TO LIGHT.';
+          const sessions=JSON.parse(localStorage.getItem('jedi:R7:sessions')||'[]');
+          sessions.push({t:new Date().toISOString(),duration:gazeDuration});
+          localStorage.setItem('jedi:R7:sessions',JSON.stringify(sessions));
+        }
+      },1000);
+    }
+
+    function drawGaze(){
+      const W=200,cx=W/2,cy=W/2,R=90;
+      gc.clearRect(0,0,W,W);
+      const progress=gazeSeconds/gazeDuration;
+      gc.beginPath();gc.arc(cx,cy,R,0,Math.PI*2);gc.strokeStyle='#1a1a2a';gc.lineWidth=4;gc.stroke();
+      gc.beginPath();gc.arc(cx,cy,R,-Math.PI/2,-Math.PI/2+progress*Math.PI*2);gc.strokeStyle='#FFD700';gc.lineWidth=4;gc.lineCap='round';gc.stroke();
+      // Pulsing inner glow
+      const pulse=0.3+Math.sin(gazeSeconds*0.5)*0.2;
+      const grad=gc.createRadialGradient(cx,cy,0,cx,cy,R*0.6);
+      grad.addColorStop(0,`rgba(255,215,0,${pulse})`);
+      grad.addColorStop(1,'rgba(255,215,0,0)');
+      gc.beginPath();gc.arc(cx,cy,R*0.6,0,Math.PI*2);gc.fillStyle=grad;gc.fill();
+    }
+    drawGaze();
+
+    function connectMQTT(){
+      document.getElementById('mqtt-status').innerHTML='<span style="color:#FFCC00;">Connecting...</span>';
+      if(window.turtle?.mqtt){
+        window.turtle.mqtt.connect();
+        setTimeout(()=>{
+          if(window.turtle.mqtt.connected){
+            document.getElementById('mqtt-status').innerHTML='<span style="color:#22CC66;">Connected to JEDI network.</span>';
+            window.turtle.mqtt.subscribe('jedi/r7/presence',(data)=>{
+              document.getElementById('mqtt-presence').innerHTML='<span style="color:#FFD700;">Partner online: '+JSON.stringify(data)+'</span>';
+            });
+            window.turtle.mqtt.publish('jedi/r7/presence',{user:'anonymous',t:Date.now()});
+          } else {
+            document.getElementById('mqtt-status').innerHTML='<span style="color:#DD2244;">Connection pending. MQTT broker may be unavailable.</span>';
+          }
+        },3000);
+      }
+    }
+
+    function logR7(val){
+      const log=JSON.parse(localStorage.getItem('jedi:R7:health')||'[]');
+      log.push({t:new Date().toISOString(),v:val});
+      localStorage.setItem('jedi:R7:health',JSON.stringify(log));
+      alert('R7 connection level logged: '+val+'/10');
+    }
+
+    function saveJournal(){
+      const txt=document.getElementById('journal').value.trim();
+      if(!txt)return;
+      const entries=JSON.parse(localStorage.getItem('jedi:R7:journal')||'[]');
+      entries.unshift({t:new Date().toISOString(),text:txt});
+      localStorage.setItem('jedi:R7:journal',JSON.stringify(entries));
+      document.getElementById('journal').value='';
       renderEntries();
     }
-    function renderEntries() {
-      const entries = JSON.parse(localStorage.getItem('jedi:R7:journal') || '[]');
-      document.getElementById('journal-entries').innerHTML = entries.slice(0, 10).map(e =>
-        '<div class="card" style="border-left-color:#FFD700;"><small style="opacity:0.5;">' +
-        new Date(e.t).toLocaleString() + '</small><p>' + e.text + '</p></div>'
+    function renderEntries(){
+      const entries=JSON.parse(localStorage.getItem('jedi:R7:journal')||'[]');
+      document.getElementById('journal-entries').innerHTML=entries.slice(0,10).map(e=>
+        '<div class="card" style="border-left-color:#FFD700;"><small style="opacity:0.5;">'+new Date(e.t).toLocaleString()+'</small><p>'+e.text+'</p></div>'
       ).join('');
     }
     renderEntries();
+    window.turtle?.init?.({ring:'r7',module:'r7-network'});
   </script>
 </body>
 </html>

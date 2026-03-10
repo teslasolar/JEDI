@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>R2 GATE — PROJECT JEDI</title>
+  <meta name="description" content="R2 Gate. LGN/thalamus. 90% cortex input. 4:6 breath opens the gate.">
   <link rel="stylesheet" href="/JEDI/style.css">
 </head>
 <body data-ring="r2" data-module="r2-gate">
@@ -14,22 +15,48 @@
       <div class="gauge" style="border-color:#FFCC00;font-size:1.6em;">R2</div>
       <div>
         <h1 style="color:#FFCC00;">GATE</h1>
-        <p style="opacity:0.6;">LGN/thalamus &middot; SolarPlex &middot; p=5 &middot; 165Hz</p>
+        <p style="opacity:0.6;">LGN/thalamus &middot; Solar Plexus &middot; p=5 &middot; 165Hz</p>
       </div>
     </div>
-    <blockquote style="border-left:3px solid #FFCC00;padding:12px;margin:16px 0;font-style:italic;">"I ALLOW"</blockquote>
+    <blockquote style="border-left:3px solid #FFCC00;padding:12px;font-style:italic;">"I ALLOW"</blockquote>
 
-    <h2 style="color:#FFCC00;">Overview</h2>
-    <p>The thalamic gate (LGN) decides what reaches consciousness. 90% of its input comes from cortex, not retina. The gate is state-dependent. The CIA proved this. Breath is the only autonomic function with voluntary override — the key to the gate.</p>
+    <h2 style="color:#FFCC00;margin-top:24px;">Overview</h2>
+    <p>The thalamic gate (LGN) decides what reaches consciousness. <strong>90% of its input comes from cortex, not retina.</strong> The gate is state-dependent. The CIA proved this in the Gateway Process (Focus 10). Breath is the only autonomic function with voluntary override — the key to the gate.</p>
 
-    <h2 style="color:#FFCC00;margin-top:24px;">Exercise</h2>
+    <div class="card" style="border-left-color:#FFCC00;">
+      <h3 style="color:#FFCC00;">Key Insight</h3>
+      <p>The LGN receives ~90% of its synaptic input from cortical feedback, not from the retina. This means what you <em>already believe</em> determines what you <em>allow yourself to see</em>. The gate is not passive. It is actively curated by internal state.</p>
+    </div>
+
+    <h2 style="color:#FFCC00;margin-top:24px;">Exercise: 4:6 Gate Opener</h2>
+    <div class="exercise" style="text-align:center;">
+      <p>Exhale-dominant breathing activates parasympathetic nervous system via vagus nerve. This is the physical key to the R2 gate.</p>
+      <div style="position:relative;width:240px;height:240px;margin:20px auto;">
+        <canvas id="gate-canvas" width="240" height="240"></canvas>
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+          <div id="gate-phase" style="font-size:1.2em;color:#FFCC00;">READY</div>
+          <div id="gate-count" style="font-size:2.5em;font-family:var(--font-mono);">4:6</div>
+        </div>
+      </div>
+      <button class="btn" style="background:#FFCC00;" id="gate-btn" onclick="toggleBreath()">Open the Gate</button>
+      <p style="margin-top:8px;font-size:12px;opacity:0.5;">Cycles: <span id="gate-cycles">0</span> &middot; <a href="/JEDI/tools/breath/">Full breath timer &rarr;</a></p>
+    </div>
+
+    <h2 style="color:#FFCC00;margin-top:24px;">Exercise: Gate Awareness</h2>
     <div class="exercise">
-      <h3>4:6 Breath Timer</h3>
-      <div id="exercise-area"></div>
+      <p>Rate your current gate state. How open does your awareness feel right now?</p>
+      <div style="display:flex;align-items:center;gap:12px;margin:16px 0;">
+        <span style="color:#DD2244;">Closed</span>
+        <input type="range" id="gate-state" min="0" max="10" value="5" style="flex:1;" oninput="document.getElementById('gate-val').textContent=this.value">
+        <span style="color:#22CC66;">Open</span>
+        <span id="gate-val" style="width:24px;text-align:center;">5</span>
+      </div>
+      <button class="btn" style="background:#FFCC00;" onclick="logGateState()">Log Gate State</button>
+      <canvas id="gate-history" width="500" height="100" style="display:block;margin:16px auto;width:100%;"></canvas>
     </div>
 
     <h2 style="color:#FFCC00;margin-top:24px;">Journal</h2>
-    <textarea id="journal" style="width:100%;min-height:120px;" placeholder="Record your gate observations..."></textarea>
+    <textarea id="journal" style="width:100%;min-height:120px;" placeholder="What did you notice about your gate? What state were you in before breathing vs after?"></textarea>
     <button class="btn" style="background:#FFCC00;margin-top:8px;" onclick="saveJournal()">Save Entry</button>
     <div id="journal-entries" style="margin-top:16px;"></div>
 
@@ -38,25 +65,88 @@
   </div>
   <script src="/JEDI/turtle.html" type="module"></script>
   <script>
-    window.turtle?.init?.({ ring: 'r2', module: 'r2-gate' });
-    function saveJournal() {
-      const txt = document.getElementById('journal').value.trim();
-      if (!txt) return;
-      const key = 'jedi:R2:journal';
-      const entries = JSON.parse(localStorage.getItem(key) || '[]');
-      entries.unshift({ t: new Date().toISOString(), text: txt });
-      localStorage.setItem(key, JSON.stringify(entries));
-      document.getElementById('journal').value = '';
+    // Breath timer
+    let running=false, timer=null, phase='in', countdown=0, cycles=0;
+    const bc=document.getElementById('gate-canvas').getContext('2d');
+    const BW=240, cx=BW/2, cy=BW/2, R=100;
+
+    function toggleBreath() {
+      if (running) { clearInterval(timer); running=false; document.getElementById('gate-btn').textContent='Open the Gate'; return; }
+      running=true; phase='in'; countdown=4; cycles=0;
+      document.getElementById('gate-btn').textContent='Close Gate';
+      timer=setInterval(()=>{
+        countdown--;
+        if(countdown<=0){
+          if(phase==='in'){phase='out';countdown=6;}
+          else{phase='in';countdown=4;cycles++;document.getElementById('gate-cycles').textContent=cycles;}
+        }
+        document.getElementById('gate-phase').textContent=phase==='in'?'INHALE':'EXHALE';
+        document.getElementById('gate-phase').style.color=phase==='in'?'#FFCC00':'#22CC66';
+        document.getElementById('gate-count').textContent=countdown;
+        drawBreath();
+      },1000);
+    }
+
+    function drawBreath(){
+      bc.clearRect(0,0,BW,BW);
+      const total=phase==='in'?4:6;
+      const progress=1-(countdown/total);
+      const color=phase==='in'?'#FFCC00':'#22CC66';
+      bc.beginPath();bc.arc(cx,cy,R,0,Math.PI*2);bc.strokeStyle='#1a1a2a';bc.lineWidth=6;bc.stroke();
+      bc.beginPath();bc.arc(cx,cy,R,-Math.PI/2,-Math.PI/2+progress*Math.PI*2);bc.strokeStyle=color;bc.lineWidth=6;bc.lineCap='round';bc.stroke();
+    }
+    drawBreath();
+
+    // Gate state logging
+    function logGateState(){
+      const val=parseInt(document.getElementById('gate-state').value);
+      const log=JSON.parse(localStorage.getItem('jedi:R2:gateLog')||'[]');
+      log.push({t:Date.now(),v:val});
+      if(log.length>100)log.shift();
+      localStorage.setItem('jedi:R2:gateLog',JSON.stringify(log));
+      drawHistory();
+    }
+
+    function drawHistory(){
+      const hc=document.getElementById('gate-history').getContext('2d');
+      const log=JSON.parse(localStorage.getItem('jedi:R2:gateLog')||'[]');
+      const W=500,H=100;
+      hc.clearRect(0,0,W,H);
+      hc.fillStyle='#0a0a12';hc.fillRect(0,0,W,H);
+      if(log.length<2)return;
+      hc.beginPath();
+      log.forEach((p,i)=>{
+        const x=(i/(log.length-1))*W;
+        const y=H-(p.v/10)*H;
+        i===0?hc.moveTo(x,y):hc.lineTo(x,y);
+      });
+      hc.strokeStyle='#FFCC00';hc.lineWidth=2;hc.stroke();
+      log.forEach((p,i)=>{
+        const x=(i/(log.length-1))*W;
+        const y=H-(p.v/10)*H;
+        hc.beginPath();hc.arc(x,y,3,0,Math.PI*2);hc.fillStyle='#FFCC00';hc.fill();
+      });
+    }
+    drawHistory();
+
+    // Journal
+    function saveJournal(){
+      const txt=document.getElementById('journal').value.trim();
+      if(!txt)return;
+      const entries=JSON.parse(localStorage.getItem('jedi:R2:journal')||'[]');
+      entries.unshift({t:new Date().toISOString(),text:txt});
+      localStorage.setItem('jedi:R2:journal',JSON.stringify(entries));
+      document.getElementById('journal').value='';
       renderEntries();
     }
-    function renderEntries() {
-      const entries = JSON.parse(localStorage.getItem('jedi:R2:journal') || '[]');
-      document.getElementById('journal-entries').innerHTML = entries.slice(0, 10).map(e =>
-        '<div class="card" style="border-left-color:#FFCC00;"><small style="opacity:0.5;">' +
-        new Date(e.t).toLocaleString() + '</small><p>' + e.text + '</p></div>'
+    function renderEntries(){
+      const entries=JSON.parse(localStorage.getItem('jedi:R2:journal')||'[]');
+      document.getElementById('journal-entries').innerHTML=entries.slice(0,10).map(e=>
+        '<div class="card" style="border-left-color:#FFCC00;"><small style="opacity:0.5;">'+new Date(e.t).toLocaleString()+'</small><p>'+e.text+'</p></div>'
       ).join('');
     }
     renderEntries();
+    window.turtle?.init?.({ring:'r2',module:'r2-gate'});
   </script>
 </body>
 </html>

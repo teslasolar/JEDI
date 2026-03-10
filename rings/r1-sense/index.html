@@ -12,51 +12,86 @@
     <p><a href="/JEDI/rings/">&larr; All Rings</a></p>
     <div style="display:flex;align-items:center;gap:16px;margin:20px 0;">
       <div class="gauge" style="border-color:#FF6622;font-size:1.6em;">R1</div>
-      <div>
-        <h1 style="color:#FF6622;">SENSE</h1>
-        <p style="opacity:0.6;">PNS/retina &middot; Sacral &middot; p=3 &middot; 110Hz</p>
-      </div>
+      <div><h1 style="color:#FF6622;">SENSE</h1><p style="opacity:0.6;">PNS/retina &middot; Sacral &middot; p=3 &middot; 110Hz</p></div>
     </div>
-    <blockquote style="border-left:3px solid #FF6622;padding:12px;margin:16px 0;font-style:italic;">"I RECEIVE"</blockquote>
+    <blockquote style="border-left:3px solid #FF6622;padding:12px;font-style:italic;">"I RECEIVE"</blockquote>
+    <h2 style="color:#FF6622;margin-top:24px;">Overview</h2>
+    <p>The retina computes before the brain sees. You sense more than you are aware of. R1 is raw sensory bandwidth — peripheral vision, ambient sound, temperature. The Penrose tiling maps here: sensory input is aperiodic, never repeats, always structured.</p>
 
-    <h2 style="color:#FF6622;">Overview</h2>
-    <p>The retina computes before the brain sees. You sense more than you are aware of. R1 is raw sensory bandwidth — peripheral vision, ambient sound, temperature, all the data streams below conscious threshold.</p>
+    <h2 style="color:#FF6622;margin-top:24px;">Exercise: Peripheral Vision Expansion</h2>
+    <div class="exercise" style="text-align:center;">
+      <p>Fix your gaze on the center dot. Notice the colored dots appearing in your peripheral vision without moving your eyes.</p>
+      <canvas id="periph-canvas" width="500" height="300" style="display:block;margin:16px auto;background:#020204;border:1px solid #1a1a2a;"></canvas>
+      <button class="btn" style="background:#FF6622;" onclick="startPeripheral()">Start Exercise</button>
+      <p id="periph-score" style="margin-top:8px;font-size:13px;opacity:0.6;">Detected: 0 / 0</p>
+    </div>
 
-    <h2 style="color:#FF6622;margin-top:24px;">Exercise</h2>
+    <h2 style="color:#FF6622;margin-top:24px;">Exercise: Sound Awareness</h2>
     <div class="exercise">
-      <h3>Peripheral Vision Expansion</h3>
-      <div id="exercise-area"></div>
+      <p>Close your eyes for 60 seconds. Count every distinct sound you hear. Don't name them — just count.</p>
+      <div style="text-align:center;margin:16px 0;">
+        <div id="sound-timer" style="font-size:2em;font-family:var(--font-mono);">60</div>
+        <button class="btn" style="background:#FF6622;margin:8px;" onclick="startSound()">Start Listening</button>
+        <div style="margin-top:12px;">
+          <label>Sounds counted: </label>
+          <input type="number" id="sound-count" value="0" min="0" style="width:60px;text-align:center;">
+          <button class="btn" style="background:#FF6622;font-size:12px;padding:4px 10px;" onclick="logSound()">Log</button>
+        </div>
+      </div>
     </div>
 
     <h2 style="color:#FF6622;margin-top:24px;">Journal</h2>
-    <textarea id="journal" style="width:100%;min-height:120px;" placeholder="Record your sense observations..."></textarea>
+    <textarea id="journal" style="width:100%;min-height:120px;" placeholder="What did you sense that you weren't aware of before? What was in your peripheral vision?"></textarea>
     <button class="btn" style="background:#FF6622;margin-top:8px;" onclick="saveJournal()">Save Entry</button>
     <div id="journal-entries" style="margin-top:16px;"></div>
-
-    <div id="md-content" style="margin-top:24px;"></div>
     <footer>LIGHT TO LIGHT &middot; 510,510</footer>
   </div>
   <script src="/JEDI/turtle.html" type="module"></script>
   <script>
-    window.turtle?.init?.({ ring: 'r1', module: 'r1-sense' });
-    function saveJournal() {
-      const txt = document.getElementById('journal').value.trim();
-      if (!txt) return;
-      const key = 'jedi:R1:journal';
-      const entries = JSON.parse(localStorage.getItem(key) || '[]');
-      entries.unshift({ t: new Date().toISOString(), text: txt });
-      localStorage.setItem(key, JSON.stringify(entries));
-      document.getElementById('journal').value = '';
-      renderEntries();
+    const pc=document.getElementById('periph-canvas');const ctx=pc.getContext('2d');
+    let periphTimer=null,dots=[],detected=0,total=0;
+    const colors=['#DD2244','#FF6622','#FFCC00','#22CC66','#2299DD','#7744DD','#BB88FF'];
+
+    function startPeripheral(){
+      if(periphTimer){clearInterval(periphTimer);periphTimer=null;return;}
+      dots=[];detected=0;total=0;
+      periphTimer=setInterval(()=>{
+        ctx.fillStyle='#020204';ctx.fillRect(0,0,500,300);
+        // Center dot
+        ctx.beginPath();ctx.arc(250,150,6,0,Math.PI*2);ctx.fillStyle='#fff';ctx.fill();
+        // Spawn dot
+        if(Math.random()>0.92){
+          const angle=Math.random()*Math.PI*2;
+          const dist=80+Math.random()*140;
+          dots.push({x:250+Math.cos(angle)*dist,y:150+Math.sin(angle)*dist,c:colors[Math.floor(Math.random()*7)],life:60});
+          total++;
+        }
+        // Draw dots
+        dots.forEach(d=>{d.life--;ctx.beginPath();ctx.arc(d.x,d.y,4,0,Math.PI*2);ctx.fillStyle=d.c;ctx.globalAlpha=d.life/60;ctx.fill();});
+        ctx.globalAlpha=1;
+        dots=dots.filter(d=>d.life>0);
+        document.getElementById('periph-score').textContent='Spawned: '+total+' dots (keep eyes on center)';
+      },50);
     }
-    function renderEntries() {
-      const entries = JSON.parse(localStorage.getItem('jedi:R1:journal') || '[]');
-      document.getElementById('journal-entries').innerHTML = entries.slice(0, 10).map(e =>
-        '<div class="card" style="border-left-color:#FF6622;"><small style="opacity:0.5;">' +
-        new Date(e.t).toLocaleString() + '</small><p>' + e.text + '</p></div>'
-      ).join('');
+
+    let soundTimer=null;
+    function startSound(){
+      if(soundTimer){clearInterval(soundTimer);soundTimer=null;return;}
+      let count=60;
+      soundTimer=setInterval(()=>{count--;document.getElementById('sound-timer').textContent=count;if(count<=0){clearInterval(soundTimer);soundTimer=null;}},1000);
     }
+    function logSound(){
+      const n=parseInt(document.getElementById('sound-count').value);
+      const log=JSON.parse(localStorage.getItem('jedi:R1:sounds')||'[]');
+      log.push({t:new Date().toISOString(),count:n});
+      localStorage.setItem('jedi:R1:sounds',JSON.stringify(log));
+      alert('Sound count logged: '+n);
+    }
+
+    function saveJournal(){const t=document.getElementById('journal').value.trim();if(!t)return;const e=JSON.parse(localStorage.getItem('jedi:R1:journal')||'[]');e.unshift({t:new Date().toISOString(),text:t});localStorage.setItem('jedi:R1:journal',JSON.stringify(e));document.getElementById('journal').value='';renderEntries();}
+    function renderEntries(){const e=JSON.parse(localStorage.getItem('jedi:R1:journal')||'[]');document.getElementById('journal-entries').innerHTML=e.slice(0,10).map(x=>'<div class="card" style="border-left-color:#FF6622;"><small style="opacity:0.5;">'+new Date(x.t).toLocaleString()+'</small><p>'+x.text+'</p></div>').join('');}
     renderEntries();
+    window.turtle?.init?.({ring:'r1',module:'r1-sense'});
   </script>
 </body>
 </html>

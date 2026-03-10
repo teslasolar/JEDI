@@ -12,51 +12,92 @@
     <p><a href="/JEDI/rings/">&larr; All Rings</a></p>
     <div style="display:flex;align-items:center;gap:16px;margin:20px 0;">
       <div class="gauge" style="border-color:#BB88FF;font-size:1.6em;">R6</div>
-      <div>
-        <h1 style="color:#BB88FF;">OBSERVER</h1>
-        <p style="opacity:0.6;">V5MT/parietal &middot; Crown &middot; p=17 &middot; 935Hz</p>
-      </div>
+      <div><h1 style="color:#BB88FF;">OBSERVER</h1><p style="opacity:0.6;">V5MT/parietal &middot; Crown &middot; p=17 &middot; 935Hz</p></div>
     </div>
-    <blockquote style="border-left:3px solid #BB88FF;padding:12px;margin:16px 0;font-style:italic;">"I WATCH"</blockquote>
+    <blockquote style="border-left:3px solid #BB88FF;padding:12px;font-style:italic;">"I WATCH"</blockquote>
+    <h2 style="color:#BB88FF;margin-top:24px;">Overview</h2>
+    <p>The observer is always 300ms behind reality. V5/MT tracks motion, the parietal cortex integrates it all. <strong>The crown watches the watcher.</strong> This is the meta-awareness that the Gateway Process calls Focus 21. The E8 root system maps here — 240 roots, the observer's complete basis vectors.</p>
 
-    <h2 style="color:#BB88FF;">Overview</h2>
-    <p>The observer is always 300ms behind reality. V5/MT tracks motion, the parietal cortex integrates it all. The crown watches the watcher. This is the meta-awareness that the Gateway Process calls Focus 21.</p>
+    <h2 style="color:#BB88FF;margin-top:24px;">Exercise: Zazen Gaze Timer</h2>
+    <div class="exercise" style="text-align:center;">
+      <p>Soften your gaze on the dot below. Don't focus — let your eyes rest. Watch the watcher watching.</p>
+      <div style="position:relative;width:200px;height:200px;margin:20px auto;">
+        <canvas id="zazen-canvas" width="200" height="200"></canvas>
+      </div>
+      <div id="zazen-timer" style="font-size:2em;font-family:var(--font-mono);color:#BB88FF;">10:00</div>
+      <div style="margin:8px 0;">
+        <label style="font-size:12px;opacity:0.6;">Minutes: </label>
+        <input type="number" id="zazen-min" value="10" min="1" max="60" style="width:60px;text-align:center;">
+      </div>
+      <button class="btn" style="background:#BB88FF;" id="zazen-btn" onclick="toggleZazen()">Begin Zazen</button>
+    </div>
 
-    <h2 style="color:#BB88FF;margin-top:24px;">Exercise</h2>
+    <h2 style="color:#BB88FF;margin-top:24px;">Exercise: 300ms Awareness</h2>
     <div class="exercise">
-      <h3>Zazen Gaze Timer</h3>
-      <div id="exercise-area"></div>
+      <p>The observer is always 300ms behind the present moment. Try to catch the gap:</p>
+      <ol style="margin:12px 0;padding-left:20px;">
+        <li>Snap your fingers</li>
+        <li>Notice the sound</li>
+        <li>Notice that you noticed the sound</li>
+        <li>That third step — that's the 300ms gap</li>
+      </ol>
+      <p>The observer cannot observe the present. It can only observe the observation. Turtles all the way down.</p>
     </div>
 
     <h2 style="color:#BB88FF;margin-top:24px;">Journal</h2>
-    <textarea id="journal" style="width:100%;min-height:120px;" placeholder="Record your observer observations..."></textarea>
+    <textarea id="journal" style="width:100%;min-height:120px;" placeholder="What did the observer notice? Were you able to catch the gap?"></textarea>
     <button class="btn" style="background:#BB88FF;margin-top:8px;" onclick="saveJournal()">Save Entry</button>
     <div id="journal-entries" style="margin-top:16px;"></div>
-
-    <div id="md-content" style="margin-top:24px;"></div>
     <footer>LIGHT TO LIGHT &middot; 510,510</footer>
   </div>
   <script src="/JEDI/turtle.html" type="module"></script>
   <script>
-    window.turtle?.init?.({ ring: 'r6', module: 'r6-observer' });
-    function saveJournal() {
-      const txt = document.getElementById('journal').value.trim();
-      if (!txt) return;
-      const key = 'jedi:R6:journal';
-      const entries = JSON.parse(localStorage.getItem(key) || '[]');
-      entries.unshift({ t: new Date().toISOString(), text: txt });
-      localStorage.setItem(key, JSON.stringify(entries));
-      document.getElementById('journal').value = '';
-      renderEntries();
+    const zc=document.getElementById('zazen-canvas').getContext('2d');
+    let zazenTimer=null,zazenSec=0,zazenDuration=600,zazenT=0;
+
+    function drawZazen(){
+      const W=200,cx=W/2,cy=W/2;
+      zc.fillStyle='rgba(5,4,8,0.05)';zc.fillRect(0,0,W,W);
+      // Soft pulsing dot
+      const pulse=3+Math.sin(zazenT*0.5)*2;
+      const grad=zc.createRadialGradient(cx,cy,0,cx,cy,pulse*8);
+      grad.addColorStop(0,'rgba(187,136,255,0.6)');
+      grad.addColorStop(1,'rgba(187,136,255,0)');
+      zc.beginPath();zc.arc(cx,cy,pulse*8,0,Math.PI*2);zc.fillStyle=grad;zc.fill();
+      zc.beginPath();zc.arc(cx,cy,pulse,0,Math.PI*2);zc.fillStyle='#BB88FF';zc.fill();
+      // Progress ring
+      if(zazenTimer){
+        const progress=zazenSec/zazenDuration;
+        zc.beginPath();zc.arc(cx,cy,90,-Math.PI/2,-Math.PI/2+progress*Math.PI*2);zc.strokeStyle='rgba(187,136,255,0.2)';zc.lineWidth=1;zc.stroke();
+      }
+      zazenT+=0.02;
     }
-    function renderEntries() {
-      const entries = JSON.parse(localStorage.getItem('jedi:R6:journal') || '[]');
-      document.getElementById('journal-entries').innerHTML = entries.slice(0, 10).map(e =>
-        '<div class="card" style="border-left-color:#BB88FF;"><small style="opacity:0.5;">' +
-        new Date(e.t).toLocaleString() + '</small><p>' + e.text + '</p></div>'
-      ).join('');
+
+    function toggleZazen(){
+      if(zazenTimer){clearInterval(zazenTimer);zazenTimer=null;document.getElementById('zazen-btn').textContent='Begin Zazen';return;}
+      zazenDuration=parseInt(document.getElementById('zazen-min').value)*60;zazenSec=0;
+      document.getElementById('zazen-btn').textContent='End Zazen';
+      zazenTimer=setInterval(()=>{
+        zazenSec++;
+        const remain=zazenDuration-zazenSec;
+        document.getElementById('zazen-timer').textContent=Math.floor(remain/60)+':'+String(remain%60).padStart(2,'0');
+        drawZazen();
+        if(zazenSec>=zazenDuration){
+          clearInterval(zazenTimer);zazenTimer=null;
+          document.getElementById('zazen-btn').textContent='Begin Zazen';
+          const log=JSON.parse(localStorage.getItem('jedi:R6:zazen')||'[]');
+          log.push({t:new Date().toISOString(),duration:zazenDuration});
+          localStorage.setItem('jedi:R6:zazen',JSON.stringify(log));
+        }
+      },1000);
     }
-    renderEntries();
+
+    function animIdle(){drawZazen();if(!zazenTimer)requestAnimationFrame(animIdle);}
+    animIdle();
+
+    function saveJournal(){const t=document.getElementById('journal').value.trim();if(!t)return;const e=JSON.parse(localStorage.getItem('jedi:R6:journal')||'[]');e.unshift({t:new Date().toISOString(),text:t});localStorage.setItem('jedi:R6:journal',JSON.stringify(e));document.getElementById('journal').value='';renderEntries();}
+    function renderEntries(){const e=JSON.parse(localStorage.getItem('jedi:R6:journal')||'[]');document.getElementById('journal-entries').innerHTML=e.slice(0,10).map(x=>'<div class="card" style="border-left-color:#BB88FF;"><small style="opacity:0.5;">'+new Date(x.t).toLocaleString()+'</small><p>'+x.text+'</p></div>').join('');}
+    renderEntries();window.turtle?.init?.({ring:'r6',module:'r6-observer'});
   </script>
 </body>
 </html>
