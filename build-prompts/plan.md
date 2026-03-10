@@ -34,12 +34,12 @@
 - [x] 18-tools-misc.md — Dimensions, triple-threat, word-drip
 
 ## Phase 6: Konomi + eVGPU
-- [ ] 19-konomi.md — Industrial standards system
+- [x] 19-konomi.md — Industrial standards system
 - [x] 20-evgpu.md — Nano eVGPU compute layer
 
 ## Phase 7: Polish + Deploy
-- [ ] 21-polish.md — Mobile, SEO, progressive enhancement
-- [ ] 22-deploy.md — GitHub Pages deployment
+- [x] 21-polish.md — Mobile, SEO, progressive enhancement
+- [x] 22-deploy.md — GitHub Pages deployment
 
 ## Archive
 Completed prompts move to `archive/` with completion date prefix.

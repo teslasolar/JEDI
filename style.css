@@ -240,3 +240,56 @@ input:focus, textarea:focus { border-color: var(--ring, var(--r7)); outline: non
 
 /* Body bottom padding for fixed nav */
 body { padding-bottom: 50px; }
+
+/* Focus visible for keyboard nav */
+a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible {
+  outline: 2px solid var(--r7);
+  outline-offset: 2px;
+}
+
+/* Touch targets */
+@media (pointer: coarse) {
+  .btn { min-height: 44px; min-width: 44px; }
+  .ring-dot { width: 20px !important; height: 20px !important; }
+  #ring-nav a { padding: 4px; }
+}
+
+/* Small mobile */
+@media (max-width: 480px) {
+  h1 { font-size: 1.5em; }
+  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+  .container { padding: 10px; }
+  .gauge { width: 50px !important; height: 50px !important; font-size: 0.8em !important; }
+}
+
+/* Print styles */
+@media print {
+  body { background: #fff; color: #000; padding-bottom: 0; }
+  #ring-nav, .btn, button, canvas, .breath-circle { display: none !important; }
+  a { color: #333; text-decoration: underline; }
+  a::after { content: " (" attr(href) ")"; font-size: 0.8em; opacity: 0.6; }
+  .card { border: 1px solid #ccc; break-inside: avoid; }
+  footer { opacity: 1; }
+  h1, h2, h3, strong { color: #000 !important; }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Skip to content */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: var(--r7);
+  color: var(--void);
+  padding: 8px;
+  z-index: 300;
+  font-family: var(--font-mono);
+}
+.skip-link:focus { top: 0; }

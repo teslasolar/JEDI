@@ -33,7 +33,12 @@
     {"path":"/profiles/","title":"Profile Builder","ring":null},
     {"path":"/tools/","title":"Tools","ring":null},
     {"path":"/tools/breath/","title":"Breath Timer","ring":"R2"},
-    {"path":"/tags/","title":"Tag Provider","ring":null}
+    {"path":"/tags/","title":"Tag Provider","ring":null},
+    {"path":"/docs/konomi/","title":"Konomi Standards","ring":null},
+    {"path":"/tools/evgpu/","title":"eVGPU Dashboard","ring":null},
+    {"path":"/tools/dimensions/","title":"127 Dimensions","ring":null},
+    {"path":"/tools/triple-threat/","title":"Triple Threat","ring":null},
+    {"path":"/tools/word-drip/","title":"Word Drip","ring":null}
   ],
   "docs": [
     {"slug":"eye-rings","title":"Seven Rings Behind Your Eyes","path":"/research/eye-rings/"},

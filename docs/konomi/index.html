@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Konomi Standards — PROJECT JEDI</title>
+  <link rel="stylesheet" href="/JEDI/style.css">
+</head>
+<body data-module="konomi">
+  <nav id="ring-nav"></nav>
+  <div class="container">
+    <p><a href="/JEDI/docs/">&larr; Documents</a></p>
+    <h1 style="color:#FFD700;">Konomi Standard</h1>
+    <p>Self-Defining Industrial Standards Compression. All standards queryable via <a href="/JEDI/tags/">Tag Provider</a>.</p>
+
+    <div class="grid grid-2" style="margin-top:24px;" id="std-grid"></div>
+
+    <h2 style="color:#FFD700;margin-top:32px;">Crosswalks</h2>
+    <div id="crosswalks" style="margin-top:12px;"></div>
+
+    <h2 style="color:#FFD700;margin-top:32px;">Ring Mapping</h2>
+    <div class="card">
+      <table>
+        <tr><th>Ring</th><th>ISA-95 Level</th><th>Standard Focus</th></tr>
+        <tr><td style="color:#DD2244;">R0</td><td>L0 — Process</td><td>Modbus, Sensors, Actuators</td></tr>
+        <tr><td style="color:#FF6622;">R1</td><td>L1 — Sensing</td><td>PLC/DCS, RTU, Direct Control</td></tr>
+        <tr><td style="color:#FFCC00;">R2</td><td>L2 — Control</td><td>SCADA, HMI (ISA-101), Alarms (ISA-18.2)</td></tr>
+        <tr><td style="color:#22CC66;">R3</td><td>L2-L3</td><td>ISA-88 Batch, PackML State Machines</td></tr>
+        <tr><td style="color:#2299DD;">R4</td><td>L3 — MOM</td><td>MES, LIMS, WMS, OPC-UA</td></tr>
+        <tr><td style="color:#7744DD;">R5</td><td>L3-L4</td><td>Sparkplug/MQTT, KPIs</td></tr>
+        <tr><td style="color:#BB88FF;">R6</td><td>L4 — Business</td><td>ERP, BI, OEE Analytics</td></tr>
+        <tr><td style="color:#FFD700;">R7</td><td>Network</td><td>Inter-system communication (OPC-UA + Sparkplug)</td></tr>
+      </table>
+    </div>
+
+    <h2 style="color:#FFD700;margin-top:32px;">Load into Tag Provider</h2>
+    <div class="exercise">
+      <p>Seed all Konomi UDTs and crosswalks into the SQLite tag database.</p>
+      <button class="btn" id="seed-btn" onclick="seedKonomi()">Seed Konomi Standards</button>
+      <div id="seed-status" style="margin-top:8px;"></div>
+    </div>
+
+    <footer>LIGHT TO LIGHT &middot; 510,510</footer>
+  </div>
+  <script src="/JEDI/turtle.html" type="module"></script>
+  <script>
+    const standards = [
+      {id:'ISA-95',name:'Enterprise-Control Integration',color:'#BB88FF',levels:'L0-L4',
+        udts:['PhysicalAsset','Equipment','Material','Personnel','ProcessSegment','ProductionSchedule','ProductionPerformance'],
+        desc:'Hierarchical model mapping enterprise (ERP) to control (PLC). Defines data flows between levels.'},
+      {id:'ISA-88',name:'Batch Process Control',color:'#22CC66',levels:'ProcessCell→Unit→EM→CM',
+        udts:['ProcessCell','Unit','EquipmentModule','ControlModule','Recipe','Procedure','Phase','Batch'],
+        desc:'Batch recipe management and equipment state machines. PackML state model for unit control.'},
+      {id:'ISA-101',name:'HMI Design',color:'#FFCC00',levels:'L1-L5 Display Layers',
+        udts:['HMI_Layer','ColorMeaning','GraphicElement','Faceplate','Trend'],
+        desc:'Situational awareness over aesthetics. Gray backgrounds, color = meaning. 5 display layers.'},
+      {id:'ISA-18.2',name:'Alarm Management',color:'#DD2244',levels:'P1-P4 Priority',
+        udts:['AlarmPriority','AlarmState','Alarm','AlarmClass'],
+        desc:'Alarm lifecycle: NORMAL→UNACK→ACKED→NORMAL. Target <6 alarms/hr. Every alarm must be actionable.'},
+      {id:'OPC-UA',name:'Industrial Communication',color:'#2299DD',levels:'Nodes + Subscriptions',
+        udts:['OPC_Node','OPC_Variable','OPC_Method','OPC_Subscription','OPC_MonitoredItem'],
+        desc:'Address space with Object/Variable/Method nodes. Companion specs for ISA-95, PackML, etc.'},
+      {id:'MQTT-Sparkplug',name:'Pub/Sub Messaging',color:'#FF6622',levels:'NBIRTH/NDATA/NCMD',
+        udts:['MQTT_Topic','Sparkplug_Topic','Sparkplug_Payload','Sparkplug_DataType'],
+        desc:'Lightweight pub/sub with Sparkplug B payload format. Report-by-exception with store-and-forward.'},
+      {id:'Modbus',name:'Field Protocol',color:'#DD2244',levels:'Coils + Registers',
+        udts:['Modbus_Register','Modbus_DataType','Modbus_Map'],
+        desc:'Simple register-based protocol. FC01-FC16 function codes. 4 register types: Coil, DI, HR, IR.'},
+      {id:'KPI',name:'Performance Metrics',color:'#22CC66',levels:'OEE Tree',
+        udts:['OEE','MTBF','MTTR','Downtime','FirstPassYield','CycleTime','Throughput','EnergyKPI'],
+        desc:'OEE = Availability × Performance × Quality. Target: >85% OEE, >90% availability, >99% quality.'}
+    ];
+
+    const crosswalks = [
+      {from:'ISA-95',to:'ISA-88',maps:['WorkCenter=ProcessCell','WorkUnit=Unit','ProcessSegment=Operation','ProductionSchedule→Batch']},
+      {from:'ISA-95',to:'OPC-UA',maps:['Equipment→Object(ns=isa95)','Property→Variable','Capability→Method']},
+      {from:'ISA-88',to:'PackML',maps:['Phase.RUNNING=EXECUTE','Phase.HELD=HELD','Phase.ABORTED=ABORTED']},
+      {from:'ISA-101',to:'ISA-18.2',maps:['AlarmIndicator→AlarmState','ColorMeaning→Priority','L1-L5→AlarmList(filtered)']},
+      {from:'OPC-UA',to:'Sparkplug',maps:['Variable→Metric','Subscription→NDATA/DDATA','Method→NCMD/DCMD','AddressSpace↔NBIRTH']}
+    ];
+
+    document.getElementById('std-grid').innerHTML = standards.map(s => `
+      <div class="card" style="border-left-color:${s.color};">
+        <strong style="color:${s.color};">${s.id}</strong>
+        <div style="font-size:12px;opacity:0.6;">${s.name}</div>
+        <p style="font-size:13px;margin-top:8px;">${s.desc}</p>
+        <div style="margin-top:8px;">
+          ${s.udts.map(u => `<span class="tag" style="border-color:${s.color};">${u}</span>`).join(' ')}
+        </div>
+        <div style="font-size:11px;opacity:0.5;margin-top:4px;">${s.levels}</div>
+      </div>
+    `).join('');
+
+    document.getElementById('crosswalks').innerHTML = crosswalks.map(c => `
+      <div class="card" style="border-left-color:#FFD700;">
+        <strong>${c.from} &harr; ${c.to}</strong>
+        <div style="font-size:13px;margin-top:4px;">
+          ${c.maps.map(m => `<div style="opacity:0.7;">&bull; ${m}</div>`).join('')}
+        </div>
+      </div>
+    `).join('');
+
+    async function seedKonomi() {
+      const btn = document.getElementById('seed-btn');
+      const status = document.getElementById('seed-status');
+      btn.disabled = true;
+      status.innerHTML = '<span style="color:#FFCC00;">Loading sql.js...</span>';
+
+      try {
+        // Load sql.js if needed
+        if (typeof initSqlJs === 'undefined') {
+          await new Promise((resolve, reject) => {
+            const s = document.createElement('script');
+            s.src = 'https://sql.js.org/dist/sql-wasm.js';
+            s.onload = resolve;
+            s.onerror = reject;
+            document.head.appendChild(s);
+          });
+        }
+        // Load TagProvider
+        if (typeof TagProvider === 'undefined') {
+          await new Promise((resolve, reject) => {
+            const s = document.createElement('script');
+            s.src = '/JEDI/tags/api.js';
+            s.onload = resolve;
+            s.onerror = reject;
+            document.head.appendChild(s);
+          });
+        }
+
+        const tp = new TagProvider();
+        await tp.init();
+
+        // Seed standards as directories
+        let count = 0;
+        for (const std of standards) {
+          tp.addDir('/konomi/' + std.id + '/', null, std.id, std.name);
+          tp.setTag('/konomi/' + std.id + '/', 'type', 'standard');
+          tp.setTag('/konomi/' + std.id + '/', 'color', std.color);
+          tp.setTag('/konomi/' + std.id + '/', 'levels', std.levels);
+          tp.setTag('/konomi/' + std.id + '/', 'desc', std.desc);
+          for (const udt of std.udts) {
+            tp.setTag('/konomi/' + std.id + '/', 'udt:' + udt, udt);
+            count++;
+          }
+          count++;
+        }
+
+        // Seed crosswalks
+        for (const cw of crosswalks) {
+          const key = cw.from + ':' + cw.to;
+          tp.addDir('/konomi/crosswalk/' + key + '/', null, key, cw.from + ' ↔ ' + cw.to);
+          tp.setTag('/konomi/crosswalk/' + key + '/', 'type', 'crosswalk');
+          tp.setTag('/konomi/crosswalk/' + key + '/', 'from', cw.from);
+          tp.setTag('/konomi/crosswalk/' + key + '/', 'to', cw.to);
+          for (let i = 0; i < cw.maps.length; i++) {
+            tp.setTag('/konomi/crosswalk/' + key + '/', 'map:' + i, cw.maps[i]);
+          }
+          count++;
+        }
+
+        tp.save();
+        status.innerHTML = '<span style="color:#22CC66;">Seeded ' + count + ' entries. <a href="/JEDI/tags/">Open Tag Provider</a> to query.</span>';
+      } catch (e) {
+        status.innerHTML = '<span style="color:#DD2244;">Error: ' + e.message + '</span>';
+      }
+      btn.disabled = false;
+    }
+
+    window.turtle?.init?.({ module: 'konomi' });
+  </script>
+</body>
+</html>
