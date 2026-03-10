@@ -7,11 +7,89 @@
   <link rel="stylesheet" href="/JEDI/style.css">
 </head>
 <body data-module="word-drip">
-  <div class="container">
-    <p><a href="/JEDI/tools/">&larr; Back</a></p>
-    <h1 style="color:var(--ring, var(--r7));">Word Drip</h1>
-    <p>Module stub. Build prompt pending.</p>
-    <footer>LIGHT TO LIGHT · 510,510</footer>
+  <nav id="ring-nav"></nav>
+  <div class="container" style="text-align:center;">
+    <p style="text-align:left;"><a href="/JEDI/tools/">&larr; Tools</a></p>
+    <h1 style="color:#2299DD;">Word Drip</h1>
+    <p>Vocabulary builder. Words drip down — type them before they fall.</p>
+
+    <canvas id="game-canvas" width="600" height="400" style="display:block;margin:20px auto;background:#020204;border:1px solid #1a1a2a;"></canvas>
+    <input type="text" id="input" placeholder="Type the word..." autofocus
+           style="width:100%;max-width:400px;text-align:center;font-size:1.2em;margin:12px auto;">
+    <div style="margin:8px 0;">
+      <span style="color:#22CC66;">Score: <span id="score">0</span></span> &middot;
+      <span style="color:#DD2244;">Missed: <span id="missed">0</span></span> &middot;
+      <span style="opacity:0.6;">Level: <span id="level">1</span></span>
+    </div>
+    <button class="btn" onclick="startGame()">New Game</button>
+    <footer>LIGHT TO LIGHT &middot; 510,510</footer>
   </div>
+  <script src="/JEDI/turtle.html" type="module"></script>
+  <script>
+    const c = document.getElementById('game-canvas');
+    const ctx = c.getContext('2d');
+    const words = ['consciousness','thalamus','amygdala','retina','cortex','vagal','synapse',
+      'neuron','dendrite','axon','serotonin','dopamine','oxytocin','meditation','awareness',
+      'perception','cognition','empathy','resonance','frequency','topology','manifold',
+      'tesseract','fibration','quasar','photon','spectrum','harmonic','enteric','diencephalic',
+      'integration','observer','identity','survival','gate','heart','voice','sight','network'];
+    let drips = [], score = 0, missed = 0, level = 1, gameLoop = null;
+
+    const input = document.getElementById('input');
+    input.addEventListener('input', () => {
+      const typed = input.value.toLowerCase().trim();
+      const idx = drips.findIndex(d => d.word === typed);
+      if (idx !== -1) {
+        drips.splice(idx, 1);
+        score++;
+        document.getElementById('score').textContent = score;
+        input.value = '';
+        if (score % 5 === 0) { level++; document.getElementById('level').textContent = level; }
+      }
+    });
+
+    function spawnWord() {
+      drips.push({
+        word: words[Math.floor(Math.random() * words.length)],
+        x: Math.random() * (c.width - 120) + 20,
+        y: -20,
+        speed: 0.3 + level * 0.1 + Math.random() * 0.2
+      });
+    }
+
+    function draw() {
+      ctx.fillStyle = '#020204';
+      ctx.fillRect(0, 0, c.width, c.height);
+      const colors = ['#DD2244','#FF6622','#FFCC00','#22CC66','#2299DD','#7744DD','#BB88FF','#FFD700'];
+      drips.forEach((d, i) => {
+        d.y += d.speed;
+        ctx.fillStyle = colors[i % 8];
+        ctx.font = '16px DM Mono, monospace';
+        ctx.fillText(d.word, d.x, d.y);
+      });
+      // Remove fallen words
+      drips = drips.filter(d => {
+        if (d.y > c.height) { missed++; document.getElementById('missed').textContent = missed; return false; }
+        return true;
+      });
+      gameLoop = requestAnimationFrame(draw);
+    }
+
+    let spawnInterval;
+    function startGame() {
+      drips = []; score = 0; missed = 0; level = 1;
+      document.getElementById('score').textContent = 0;
+      document.getElementById('missed').textContent = 0;
+      document.getElementById('level').textContent = 1;
+      input.value = '';
+      input.focus();
+      if (gameLoop) cancelAnimationFrame(gameLoop);
+      if (spawnInterval) clearInterval(spawnInterval);
+      spawnInterval = setInterval(spawnWord, 2500);
+      draw();
+    }
+    startGame();
+    window.turtle?.init?.({ module: 'word-drip' });
+  </script>
 </body>
 </html>

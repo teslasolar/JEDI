@@ -6,12 +6,48 @@
   <title>Simon Profile — PROJECT JEDI</title>
   <link rel="stylesheet" href="/JEDI/style.css">
 </head>
-<body data-module="simon">
+<body data-module="profile-simon">
+  <nav id="ring-nav"></nav>
   <div class="container">
-    <p><a href="/JEDI/profiles/">&larr; Back</a></p>
-    <h1 style="color:var(--ring, var(--r7));">Simon Profile</h1>
-    <p>Module stub. Build prompt pending.</p>
-    <footer>LIGHT TO LIGHT · 510,510</footer>
+    <p><a href="/JEDI/profiles/">&larr; Profiles</a></p>
+    <h1 style="color:#BB88FF;">Simon</h1>
+    <p style="opacity:0.8;">Co-creator. Natural R3/R7 strength. Gate naturally open.</p>
+    <canvas id="radar" width="400" height="400" style="display:block;margin:20px auto;"></canvas>
+    <div id="bars" style="margin-top:16px;"></div>
+    <footer>LIGHT TO LIGHT &middot; 510,510</footer>
   </div>
+  <script src="/JEDI/turtle.html" type="module"></script>
+  <script>
+    const rings = [
+      {id:'R0',name:'SURVIVAL',color:'#DD2244'},
+      {id:'R1',name:'SENSE',color:'#FF6622'},
+      {id:'R2',name:'GATE',color:'#FFCC00'},
+      {id:'R3',name:'HEART',color:'#22CC66'},
+      {id:'R4',name:'VOICE',color:'#2299DD'},
+      {id:'R5',name:'SIGHT',color:'#7744DD'},
+      {id:'R6',name:'OBSERVER',color:'#BB88FF'},
+      {id:'R7',name:'NETWORK',color:'#FFD700'}
+    ];
+    const vals = {R0:6,R1:8,R2:7,R3:9,R4:7,R5:7,R6:6,R7:9};
+
+    document.getElementById('bars').innerHTML = rings.map(r => `
+      <div class="ring-bar">
+        <span class="ring-bar-label" style="color:${r.color};">${r.id}</span>
+        <span style="width:80px;font-size:12px;">${r.name}</span>
+        <div class="ring-bar-track"><div class="ring-bar-fill" style="width:${(vals[r.id]||5)*10}%;background:${r.color};"></div></div>
+        <span style="width:24px;text-align:right;">${vals[r.id]||5}</span>
+      </div>
+    `).join('');
+
+    // Radar
+    const c = document.getElementById('radar');
+    const ctx = c.getContext('2d');
+    const cx=c.width/2,cy=c.height/2,maxR=160;
+    for(let i=2;i<=10;i+=2){ctx.beginPath();const r=(i/10)*maxR;for(let j=0;j<=8;j++){const a=(j/8)*Math.PI*2-Math.PI/2;j===0?ctx.moveTo(cx+Math.cos(a)*r,cy+Math.sin(a)*r):ctx.lineTo(cx+Math.cos(a)*r,cy+Math.sin(a)*r);}ctx.strokeStyle='#1a1a2a';ctx.stroke();}
+    rings.forEach((ring,i)=>{const a=(i/8)*Math.PI*2-Math.PI/2;ctx.fillStyle=ring.color;ctx.font='11px DM Mono,monospace';ctx.textAlign='center';ctx.fillText(ring.id,cx+Math.cos(a)*(maxR+20),cy+Math.sin(a)*(maxR+20)+4);});
+    ctx.beginPath();rings.forEach((ring,i)=>{const a=(i/8)*Math.PI*2-Math.PI/2;const v=(vals[ring.id]||5)/10;i===0?ctx.moveTo(cx+Math.cos(a)*maxR*v,cy+Math.sin(a)*maxR*v):ctx.lineTo(cx+Math.cos(a)*maxR*v,cy+Math.sin(a)*maxR*v);});ctx.closePath();ctx.fillStyle='rgba(255,215,0,0.15)';ctx.fill();ctx.strokeStyle='#FFD700';ctx.lineWidth=2;ctx.stroke();
+    rings.forEach((ring,i)=>{const a=(i/8)*Math.PI*2-Math.PI/2;const v=(vals[ring.id]||5)/10;ctx.beginPath();ctx.arc(cx+Math.cos(a)*maxR*v,cy+Math.sin(a)*maxR*v,4,0,Math.PI*2);ctx.fillStyle=ring.color;ctx.fill();});
+    window.turtle?.init?.({ module: 'profile-simon' });
+  </script>
 </body>
 </html>

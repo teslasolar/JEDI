@@ -3,15 +3,60 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>R2 · GATE — PROJECT JEDI</title>
+  <title>R2 GATE — PROJECT JEDI</title>
   <link rel="stylesheet" href="/JEDI/style.css">
 </head>
 <body data-ring="r2" data-module="r2-gate">
+  <nav id="ring-nav"></nav>
   <div class="container">
-    <p><a href="/JEDI/rings/">&larr; Back</a></p>
-    <h1 style="color:var(--ring, var(--r7));">R2 · GATE</h1>
-    <p>Module stub. Build prompt pending.</p>
-    <footer>LIGHT TO LIGHT · 510,510</footer>
+    <p><a href="/JEDI/rings/">&larr; All Rings</a></p>
+    <div style="display:flex;align-items:center;gap:16px;margin:20px 0;">
+      <div class="gauge" style="border-color:#FFCC00;font-size:1.6em;">R2</div>
+      <div>
+        <h1 style="color:#FFCC00;">GATE</h1>
+        <p style="opacity:0.6;">LGN/thalamus &middot; SolarPlex &middot; p=5 &middot; 165Hz</p>
+      </div>
+    </div>
+    <blockquote style="border-left:3px solid #FFCC00;padding:12px;margin:16px 0;font-style:italic;">"I ALLOW"</blockquote>
+
+    <h2 style="color:#FFCC00;">Overview</h2>
+    <p>The thalamic gate (LGN) decides what reaches consciousness. 90% of its input comes from cortex, not retina. The gate is state-dependent. The CIA proved this. Breath is the only autonomic function with voluntary override — the key to the gate.</p>
+
+    <h2 style="color:#FFCC00;margin-top:24px;">Exercise</h2>
+    <div class="exercise">
+      <h3>4:6 Breath Timer</h3>
+      <div id="exercise-area"></div>
+    </div>
+
+    <h2 style="color:#FFCC00;margin-top:24px;">Journal</h2>
+    <textarea id="journal" style="width:100%;min-height:120px;" placeholder="Record your gate observations..."></textarea>
+    <button class="btn" style="background:#FFCC00;margin-top:8px;" onclick="saveJournal()">Save Entry</button>
+    <div id="journal-entries" style="margin-top:16px;"></div>
+
+    <div id="md-content" style="margin-top:24px;"></div>
+    <footer>LIGHT TO LIGHT &middot; 510,510</footer>
   </div>
+  <script src="/JEDI/turtle.html" type="module"></script>
+  <script>
+    window.turtle?.init?.({ ring: 'r2', module: 'r2-gate' });
+    function saveJournal() {
+      const txt = document.getElementById('journal').value.trim();
+      if (!txt) return;
+      const key = 'jedi:R2:journal';
+      const entries = JSON.parse(localStorage.getItem(key) || '[]');
+      entries.unshift({ t: new Date().toISOString(), text: txt });
+      localStorage.setItem(key, JSON.stringify(entries));
+      document.getElementById('journal').value = '';
+      renderEntries();
+    }
+    function renderEntries() {
+      const entries = JSON.parse(localStorage.getItem('jedi:R2:journal') || '[]');
+      document.getElementById('journal-entries').innerHTML = entries.slice(0, 10).map(e =>
+        '<div class="card" style="border-left-color:#FFCC00;"><small style="opacity:0.5;">' +
+        new Date(e.t).toLocaleString() + '</small><p>' + e.text + '</p></div>'
+      ).join('');
+    }
+    renderEntries();
+  </script>
 </body>
 </html>

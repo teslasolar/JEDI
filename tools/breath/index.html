@@ -7,11 +7,145 @@
   <link rel="stylesheet" href="/JEDI/style.css">
 </head>
 <body data-ring="r2" data-module="breath">
-  <div class="container">
-    <p><a href="/JEDI/tools/">&larr; Back</a></p>
-    <h1 style="color:var(--ring, var(--r7));">Breath Timer</h1>
-    <p>Module stub. Build prompt pending.</p>
-    <footer>LIGHT TO LIGHT · 510,510</footer>
+  <nav id="ring-nav"></nav>
+  <div class="container" style="text-align:center;">
+    <p style="text-align:left;"><a href="/JEDI/tools/">&larr; Tools</a></p>
+    <h1 style="color:#FFCC00;">4:6 Breath Timer</h1>
+    <p>Exhale-dominant breathing optimizes vagal tone. The key to the R2 gate.</p>
+
+    <div id="breath-ring" style="position:relative;width:280px;height:280px;margin:40px auto;">
+      <canvas id="breath-canvas" width="280" height="280"></canvas>
+      <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+        <div id="phase" style="font-size:1.4em;color:#FFCC00;">READY</div>
+        <div id="count" style="font-size:3em;font-family:var(--font-mono);color:#fff8e7;">4:6</div>
+      </div>
+    </div>
+
+    <div style="margin:20px 0;">
+      <button class="btn" id="start-btn" onclick="toggle()" style="background:#FFCC00;font-size:1.1em;padding:12px 40px;">Start</button>
+    </div>
+
+    <div style="display:flex;justify-content:center;gap:20px;margin:20px 0;">
+      <div>
+        <label style="font-size:12px;opacity:0.6;">Inhale</label>
+        <input type="number" id="in-time" value="4" min="1" max="12" style="width:60px;text-align:center;">
+      </div>
+      <div>
+        <label style="font-size:12px;opacity:0.6;">Exhale</label>
+        <input type="number" id="out-time" value="6" min="1" max="12" style="width:60px;text-align:center;">
+      </div>
+    </div>
+
+    <div class="card" style="text-align:left;margin-top:30px;">
+      <h3 style="color:#FFCC00;">Session Stats</h3>
+      <p>Cycles: <span id="cycles">0</span> &middot; Time: <span id="total-time">0:00</span></p>
+      <p>Breaths today: <span id="today-breaths">0</span></p>
+    </div>
+
+    <div class="card" style="text-align:left;">
+      <h3 style="color:#FFCC00;">Why 4:6?</h3>
+      <p>Exhale-dominant ratio activates parasympathetic nervous system via vagus nerve. Increases HRV. Opens the R2 gate. The only autonomic function with voluntary override.</p>
+    </div>
+
+    <footer>LIGHT TO LIGHT &middot; 510,510</footer>
   </div>
+  <script src="/JEDI/turtle.html" type="module"></script>
+  <script>
+    let running = false, timer = null, phase = 'in', countdown = 0, cycles = 0, elapsed = 0;
+    const canvas = document.getElementById('breath-canvas');
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height, cx = W/2, cy = H/2, R = 120;
+
+    function getIn() { return parseInt(document.getElementById('in-time').value) || 4; }
+    function getOut() { return parseInt(document.getElementById('out-time').value) || 6; }
+
+    function toggle() {
+      if (running) { stop(); } else { start(); }
+    }
+
+    function start() {
+      running = true;
+      phase = 'in';
+      countdown = getIn();
+      cycles = 0;
+      elapsed = 0;
+      document.getElementById('start-btn').textContent = 'Stop';
+      tick();
+      timer = setInterval(tick, 1000);
+    }
+
+    function stop() {
+      running = false;
+      clearInterval(timer);
+      document.getElementById('start-btn').textContent = 'Start';
+      document.getElementById('phase').textContent = 'READY';
+      document.getElementById('count').textContent = getIn() + ':' + getOut();
+      // Save to stats
+      const today = new Date().toDateString();
+      const key = 'jedi:breath:' + today;
+      const prev = parseInt(localStorage.getItem(key) || '0');
+      localStorage.setItem(key, prev + cycles);
+      document.getElementById('today-breaths').textContent = prev + cycles;
+    }
+
+    function tick() {
+      elapsed++;
+      countdown--;
+      if (countdown <= 0) {
+        if (phase === 'in') {
+          phase = 'out';
+          countdown = getOut();
+        } else {
+          phase = 'in';
+          countdown = getIn();
+          cycles++;
+        }
+      }
+      document.getElementById('phase').textContent = phase === 'in' ? 'INHALE' : 'EXHALE';
+      document.getElementById('phase').style.color = phase === 'in' ? '#FFCC00' : '#22CC66';
+      document.getElementById('count').textContent = countdown;
+      document.getElementById('cycles').textContent = cycles;
+      document.getElementById('total-time').textContent = Math.floor(elapsed/60) + ':' + String(elapsed%60).padStart(2,'0');
+      drawRing();
+    }
+
+    function drawRing() {
+      ctx.clearRect(0, 0, W, H);
+      const total = phase === 'in' ? getIn() : getOut();
+      const progress = 1 - (countdown / total);
+      const color = phase === 'in' ? '#FFCC00' : '#22CC66';
+
+      // Background ring
+      ctx.beginPath();
+      ctx.arc(cx, cy, R, 0, Math.PI * 2);
+      ctx.strokeStyle = '#1a1a2a';
+      ctx.lineWidth = 8;
+      ctx.stroke();
+
+      // Progress ring
+      ctx.beginPath();
+      ctx.arc(cx, cy, R, -Math.PI/2, -Math.PI/2 + progress * Math.PI * 2);
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 8;
+      ctx.lineCap = 'round';
+      ctx.stroke();
+
+      // Glow dot
+      const angle = -Math.PI/2 + progress * Math.PI * 2;
+      ctx.beginPath();
+      ctx.arc(cx + Math.cos(angle) * R, cy + Math.sin(angle) * R, 6, 0, Math.PI * 2);
+      ctx.fillStyle = color;
+      ctx.shadowColor = color;
+      ctx.shadowBlur = 12;
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    }
+
+    // Load today's stats
+    const today = new Date().toDateString();
+    document.getElementById('today-breaths').textContent = localStorage.getItem('jedi:breath:' + today) || '0';
+    drawRing();
+    window.turtle?.init?.({ ring: 'r2', module: 'breath' });
+  </script>
 </body>
 </html>

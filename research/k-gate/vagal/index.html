@@ -6,12 +6,22 @@
   <title>Vagal Gate Circuit — PROJECT JEDI</title>
   <link rel="stylesheet" href="/JEDI/style.css">
 </head>
-<body data-module="vagal">
+<body data-ring="r3" data-module="k-gate/vagal">
+  <nav id="ring-nav"></nav>
   <div class="container">
-    <p><a href="/JEDI/research/k-gate/">&larr; Back</a></p>
-    <h1 style="color:var(--ring, var(--r7));">Vagal Gate Circuit</h1>
-    <p>Module stub. Build prompt pending.</p>
-    <footer>LIGHT TO LIGHT · 510,510</footer>
+    <p><a href="/JEDI/research/k-gate/">&larr; Backk-gate/</a></p>
+    <h1 style="color:#22CC66;">Vagal Gate Circuit</h1>
+    <p style="opacity:0.8;">The vagus nerve connects gut (R0) to heart (R3) to gate (R2). The 4:6 breath ratio optimizes vagal tone.</p>
+    <div style="margin-top:24px;">
+      <div class="card" style="border-left-color:#22CC66;">
+    <h3 style="color:#22CC66;">Vagal Tone &amp; the Gate</h3>
+    <p>The vagus nerve is the physical wire between R0 (gut), R2 (gate), and R3 (heart). Higher vagal tone = more open gate. 4:6 exhale-dominant breathing is the simplest way to increase vagal tone. Measured via HRV.</p>
   </div>
+    </div>
+    <div id="md-content" style="margin-top:24px;"></div>
+    <footer>LIGHT TO LIGHT &middot; 510,510</footer>
+  </div>
+  <script src="/JEDI/turtle.html" type="module"></script>
+  <script>window.turtle?.init?.({ ring: 'r3', module: 'k-gate/vagal' });</script>
 </body>
 </html>

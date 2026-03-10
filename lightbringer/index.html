@@ -3,15 +3,196 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LIGHTBRINGER — PROJECT JEDI</title>
+  <title>L.I.G.H.T.B.R.I.N.G.E.R. — PROJECT JEDI</title>
   <link rel="stylesheet" href="/JEDI/style.css">
+  <style>
+    #lb-canvas { background: #020204; cursor: grab; }
+    #lb-canvas:active { cursor: grabbing; }
+    .manifold-btn { background: #1a1a2a; color: #fff8e7; border: 1px solid #333; padding: 6px 12px; cursor: pointer; font-family: var(--font-mono); font-size: 12px; margin: 2px; }
+    .manifold-btn:hover, .manifold-btn.active { border-color: #FFD700; color: #FFD700; }
+    #info-panel { background: #0a0a12; border: 1px solid #1a1a2a; padding: 16px; margin-top: 16px; }
+  </style>
 </head>
 <body data-module="lightbringer">
+  <nav id="ring-nav"></nav>
   <div class="container">
-    <p><a href="/JEDI/">&larr; Back</a></p>
-    <h1 style="color:var(--ring, var(--r7));">LIGHTBRINGER</h1>
-    <p>Module stub. Build prompt pending.</p>
-    <footer>LIGHT TO LIGHT · 510,510</footer>
+    <p><a href="/JEDI/">&larr; Home</a></p>
+    <h1 style="color:#FFD700;">L.I.G.H.T.B.R.I.N.G.E.R.</h1>
+    <p>Hyperdimensional topology engine. Click a manifold to explore its ring mapping.</p>
+
+    <div style="display:flex;flex-wrap:wrap;gap:4px;margin:16px 0;" id="manifold-btns"></div>
+
+    <div class="canvas-wrap" style="max-width:600px;">
+      <canvas id="lb-canvas" width="600" height="600"></canvas>
+    </div>
+
+    <div id="info-panel">
+      <h3 id="m-name" style="color:#FFD700;"></h3>
+      <p id="m-ring" style="opacity:0.7;margin-top:4px;"></p>
+      <p id="m-desc" style="margin-top:8px;"></p>
+    </div>
+
+    <footer>LIGHT TO LIGHT &middot; 510,510</footer>
   </div>
+  <script src="/JEDI/turtle.html" type="module"></script>
+  <script>
+    const manifolds = [
+      {name:'Tesseract',ring:'R2',color:'#FFCC00',desc:'The thalamic gate is a 4D filter. Tesseract = 4D cube = gate geometry.',verts:16,type:'hyper'},
+      {name:'Hopf Fibration',ring:'R7',color:'#FFD700',desc:'S3→S2 fiber bundle models connection between two spheres (two brains).',verts:64,type:'fiber'},
+      {name:'Klein Bottle',ring:'R3',color:'#22CC66',desc:'Non-orientable. Love has no inside/outside boundary. The heart is a Klein bottle.',verts:48,type:'surface'},
+      {name:'Calabi-Yau',ring:'R5',color:'#7744DD',desc:'Identity is the visible 4D of a 10D self-model. Calabi-Yau compactification.',verts:80,type:'compact'},
+      {name:'E8 Root System',ring:'R6',color:'#BB88FF',desc:'240 roots = the observer\'s complete basis vectors. Everything it can see.',verts:240,type:'root'},
+      {name:'Penrose Tiling',ring:'R1',color:'#FF6622',desc:'Quasicrystal. Sensory input is aperiodic — never repeats, always structured.',verts:55,type:'quasi'},
+      {name:'Trefoil Knot',ring:'R4',color:'#2299DD',desc:'Narrative tangles. The story is a trefoil — three crossings, one loop.',verts:36,type:'knot'},
+      {name:'600-Cell',ring:'R0',color:'#DD2244',desc:'600 tetrahedra. Survival is crystalline, minimal, maximally packed.',verts:120,type:'poly'}
+    ];
+
+    let current = 0, mouseX = 0, mouseY = 0, rotX = 0, rotY = 0, dragging = false;
+    const c = document.getElementById('lb-canvas');
+    const ctx = c.getContext('2d');
+
+    // Build buttons
+    document.getElementById('manifold-btns').innerHTML = manifolds.map((m, i) =>
+      `<button class="manifold-btn${i===0?' active':''}" onclick="selectManifold(${i})">${m.name}</button>`
+    ).join('');
+
+    function selectManifold(i) {
+      current = i;
+      document.querySelectorAll('.manifold-btn').forEach((b, j) => b.classList.toggle('active', j===i));
+      const m = manifolds[i];
+      document.getElementById('m-name').textContent = m.name;
+      document.getElementById('m-name').style.color = m.color;
+      document.getElementById('m-ring').textContent = `${m.ring} — ${m.verts} vertices`;
+      document.getElementById('m-desc').textContent = m.desc;
+    }
+    selectManifold(0);
+
+    // Mouse drag rotation
+    c.addEventListener('mousedown', () => dragging = true);
+    c.addEventListener('mouseup', () => dragging = false);
+    c.addEventListener('mouseleave', () => dragging = false);
+    c.addEventListener('mousemove', e => {
+      if (dragging) { rotX += e.movementX * 0.01; rotY += e.movementY * 0.01; }
+    });
+
+    // Generate points for current manifold
+    function generatePoints(m, t) {
+      const pts = [];
+      const n = m.verts;
+      for (let i = 0; i < n; i++) {
+        const phi = (i / n) * Math.PI * 2;
+        const theta = (i / n) * Math.PI;
+        let x, y, z;
+        switch (m.type) {
+          case 'hyper':
+            x = Math.cos(phi + t) * Math.cos(theta);
+            y = Math.sin(phi + t) * Math.cos(theta);
+            z = Math.sin(theta) * Math.cos(t * 0.5 + phi);
+            break;
+          case 'fiber':
+            const s = phi;
+            x = Math.cos(s) * (1 + 0.3 * Math.cos(theta * 3 + t));
+            y = Math.sin(s) * (1 + 0.3 * Math.cos(theta * 3 + t));
+            z = 0.3 * Math.sin(theta * 3 + t);
+            break;
+          case 'surface':
+            const u = phi, v = theta;
+            x = (2 + Math.cos(v / 2 + t) * Math.sin(u) - Math.sin(v / 2 + t) * Math.sin(2 * u)) * Math.cos(v);
+            y = (2 + Math.cos(v / 2 + t) * Math.sin(u) - Math.sin(v / 2 + t) * Math.sin(2 * u)) * Math.sin(v);
+            z = Math.sin(v / 2 + t) * Math.sin(u) + Math.cos(v / 2 + t) * Math.sin(2 * u);
+            x *= 0.3; y *= 0.3; z *= 0.3;
+            break;
+          case 'compact':
+            x = Math.cos(phi * 3 + t) * Math.sin(theta * 2);
+            y = Math.sin(phi * 5 + t * 0.7) * Math.cos(theta);
+            z = Math.cos(phi * 2 + theta * 3 + t * 0.3);
+            break;
+          case 'root':
+            x = Math.cos(phi * 7 + t * 0.3) * 0.8;
+            y = Math.sin(phi * 11 + t * 0.2) * 0.8;
+            z = Math.cos(phi * 13 + theta + t * 0.1) * 0.8;
+            break;
+          case 'quasi':
+            const golden = (1 + Math.sqrt(5)) / 2;
+            x = Math.cos(phi * golden + t) * 0.8;
+            y = Math.sin(phi * golden + t) * Math.cos(theta);
+            z = Math.sin(theta + t * 0.5) * 0.5;
+            break;
+          case 'knot':
+            const tk = phi;
+            x = Math.sin(tk + t) + 2 * Math.sin(2 * tk + t);
+            y = Math.cos(tk + t) - 2 * Math.cos(2 * tk + t);
+            z = -Math.sin(3 * tk + t);
+            x *= 0.25; y *= 0.25; z *= 0.25;
+            break;
+          case 'poly':
+            x = Math.cos(phi + t * 0.5) * Math.sin(theta);
+            y = Math.sin(phi + t * 0.5) * Math.sin(theta);
+            z = Math.cos(theta);
+            break;
+        }
+        // Apply rotation
+        const cos_rx = Math.cos(rotX), sin_rx = Math.sin(rotX);
+        const cos_ry = Math.cos(rotY), sin_ry = Math.sin(rotY);
+        const y1 = y * cos_ry - z * sin_ry;
+        const z1 = y * sin_ry + z * cos_ry;
+        const x1 = x * cos_rx - z1 * sin_rx;
+        const z2 = x * sin_rx + z1 * cos_rx;
+        pts.push({ x: x1, y: y1, z: z2 });
+      }
+      return pts;
+    }
+
+    let t = 0;
+    function draw() {
+      ctx.fillStyle = '#020204';
+      ctx.fillRect(0, 0, c.width, c.height);
+      const m = manifolds[current];
+      const pts = generatePoints(m, t);
+      const cx = c.width / 2, cy = c.height / 2, scale = 180;
+
+      // Draw edges between nearby points
+      ctx.strokeStyle = m.color;
+      ctx.globalAlpha = 0.15;
+      ctx.lineWidth = 1;
+      for (let i = 0; i < pts.length; i++) {
+        for (let j = i + 1; j < Math.min(i + 4, pts.length); j++) {
+          ctx.beginPath();
+          ctx.moveTo(cx + pts[i].x * scale, cy + pts[i].y * scale);
+          ctx.lineTo(cx + pts[j].x * scale, cy + pts[j].y * scale);
+          ctx.stroke();
+        }
+      }
+      ctx.globalAlpha = 1;
+
+      // Draw points
+      pts.forEach(p => {
+        const depth = (p.z + 1.5) / 3;
+        const sz = 1.5 + depth * 3;
+        ctx.beginPath();
+        ctx.arc(cx + p.x * scale, cy + p.y * scale, sz, 0, Math.PI * 2);
+        ctx.fillStyle = m.color;
+        ctx.globalAlpha = 0.3 + depth * 0.7;
+        ctx.fill();
+      });
+      ctx.globalAlpha = 1;
+
+      // Label
+      ctx.fillStyle = m.color;
+      ctx.font = '14px DM Mono, monospace';
+      ctx.fillText(m.name + ' (' + m.ring + ')', 16, 28);
+      ctx.fillStyle = '#fff8e7';
+      ctx.font = '11px DM Mono, monospace';
+      ctx.globalAlpha = 0.4;
+      ctx.fillText('drag to rotate', 16, c.height - 16);
+      ctx.globalAlpha = 1;
+
+      t += 0.008;
+      if (!dragging) { rotX += 0.002; rotY += 0.001; }
+      requestAnimationFrame(draw);
+    }
+    draw();
+    window.turtle?.init?.({ module: 'lightbringer' });
+  </script>
 </body>
 </html>

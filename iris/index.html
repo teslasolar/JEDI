@@ -7,11 +7,92 @@
   <link rel="stylesheet" href="/JEDI/style.css">
 </head>
 <body data-ring="r1" data-module="iris">
+  <nav id="ring-nav"></nav>
   <div class="container">
-    <p><a href="/JEDI/">&larr; Back</a></p>
-    <h1 style="color:var(--ring, var(--r7));">Iris Factory</h1>
-    <p>Module stub. Build prompt pending.</p>
-    <footer>LIGHT TO LIGHT · 510,510</footer>
+    <p><a href="/JEDI/">&larr; Home</a></p>
+    <h1 style="color:#FF6622;">Iris Factory</h1>
+    <p>Signal flow simulation — how light travels through the 7 rings of your visual pathway.</p>
+
+    <div class="canvas-wrap" style="margin:30px auto;">
+      <canvas id="iris-canvas" width="500" height="500"></canvas>
+    </div>
+
+    <div class="grid grid-3" style="margin-top:24px;">
+      <a href="/JEDI/iris/trainer/" class="card" style="text-decoration:none;border-left-color:#FF6622;">
+        <strong>Iris Trainer</strong>
+        <p style="font-size:13px;opacity:0.7;">Ring-by-ring guided meditation program</p>
+      </a>
+      <a href="/JEDI/iris/chakra/" class="card" style="text-decoration:none;border-left-color:#22CC66;">
+        <strong>Chakra Map</strong>
+        <p style="font-size:13px;opacity:0.7;">Chakra-Ring mapping visualization</p>
+      </a>
+      <a href="/JEDI/research/eye-rings/" class="card" style="text-decoration:none;border-left-color:#7744DD;">
+        <strong>Eye Rings Research</strong>
+        <p style="font-size:13px;opacity:0.7;">Seven rings behind your eyes</p>
+      </a>
+    </div>
+
+    <div id="md-content" style="margin-top:24px;"></div>
+    <footer>LIGHT TO LIGHT &middot; 510,510</footer>
   </div>
+  <script src="/JEDI/turtle.html" type="module"></script>
+  <script>
+    window.turtle?.init?.({ ring: 'r1', module: 'iris' });
+    const c = document.getElementById('iris-canvas');
+    const ctx = c.getContext('2d');
+    const W = c.width, H = c.height, cx = W/2, cy = H/2;
+    const rings = [
+      {r:30,c:'#DD2244',n:'R0 Retina'},
+      {r:60,c:'#FF6622',n:'R1 Optic Nerve'},
+      {r:90,c:'#FFCC00',n:'R2 LGN/Thalamus'},
+      {r:120,c:'#22CC66',n:'R3 V1/Amygdala'},
+      {r:150,c:'#2299DD',n:'R4 V2/V3'},
+      {r:180,c:'#7744DD',n:'R5 V4/IT'},
+      {r:210,c:'#BB88FF',n:'R6 V5/MT'},
+      {r:240,c:'#FFD700',n:'R7 Network',dash:true}
+    ];
+    let photonAngle = 0, activeRing = 0;
+    function draw() {
+      ctx.clearRect(0,0,W,H);
+      rings.forEach((ring, i) => {
+        ctx.beginPath();
+        ctx.arc(cx, cy, ring.r, 0, Math.PI*2);
+        ctx.strokeStyle = ring.c;
+        ctx.lineWidth = i === activeRing ? 3 : 1;
+        ctx.globalAlpha = i === activeRing ? 1 : 0.4;
+        if (ring.dash) ctx.setLineDash([8,4]); else ctx.setLineDash([]);
+        ctx.stroke();
+        if (i === activeRing) {
+          ctx.fillStyle = ring.c;
+          ctx.font = '12px DM Mono, monospace';
+          ctx.fillText(ring.n, cx + ring.r + 8, cy);
+        }
+      });
+      ctx.globalAlpha = 1;
+      ctx.setLineDash([]);
+      // Photon
+      const pr = rings[activeRing].r;
+      const px = cx + Math.cos(photonAngle) * pr;
+      const py = cy + Math.sin(photonAngle) * pr;
+      ctx.beginPath();
+      ctx.arc(px, py, 5, 0, Math.PI*2);
+      ctx.fillStyle = '#fff';
+      ctx.fill();
+      ctx.shadowColor = rings[activeRing].c;
+      ctx.shadowBlur = 15;
+      ctx.beginPath();
+      ctx.arc(px, py, 3, 0, Math.PI*2);
+      ctx.fillStyle = rings[activeRing].c;
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      photonAngle += 0.03;
+      if (photonAngle > Math.PI * 2) {
+        photonAngle = 0;
+        activeRing = (activeRing + 1) % rings.length;
+      }
+      requestAnimationFrame(draw);
+    }
+    draw();
+  </script>
 </body>
 </html>

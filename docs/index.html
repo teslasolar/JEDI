@@ -7,11 +7,28 @@
   <link rel="stylesheet" href="/JEDI/style.css">
 </head>
 <body data-module="docs">
+  <nav id="ring-nav"></nav>
   <div class="container">
-    <p><a href="/JEDI/">&larr; Back</a></p>
-    <h1 style="color:var(--ring, var(--r7));">Documents</h1>
-    <p>Module stub. Build prompt pending.</p>
-    <footer>LIGHT TO LIGHT · 510,510</footer>
+    <p><a href="/JEDI/">&larr; Home</a></p>
+    <h1 style="color:#FFD700;">Documents</h1>
+    <p>All generated documents rendered as web-readable HTML.</p>
+    <div id="doc-list" style="margin-top:24px;"></div>
+    <footer>LIGHT TO LIGHT &middot; 510,510</footer>
   </div>
+  <script src="/JEDI/turtle.html" type="module"></script>
+  <script>
+    fetch('/JEDI/MANIFEST.json').then(r => r.json()).then(manifest => {
+      const docs = manifest.docs || [];
+      document.getElementById('doc-list').innerHTML = docs.map(d => `
+        <a href="/JEDI${d.path}" class="card" style="text-decoration:none;display:block;">
+          <strong style="color:#FFD700;">${d.title}</strong>
+          <p style="font-size:12px;opacity:0.6;">${d.path}</p>
+        </a>
+      `).join('') || '<p style="opacity:0.5;">Documents will appear here as they are ported from .docx format.</p>';
+    }).catch(() => {
+      document.getElementById('doc-list').innerHTML = '<p style="opacity:0.5;">Could not load MANIFEST.json</p>';
+    });
+    window.turtle?.init?.({ module: 'docs' });
+  </script>
 </body>
 </html>

@@ -6,12 +6,30 @@
   <title>K+ Channel Research — PROJECT JEDI</title>
   <link rel="stylesheet" href="/JEDI/style.css">
 </head>
-<body data-module="k-gate">
+<body data-ring="r2" data-module="k-gate">
+  <nav id="ring-nav"></nav>
   <div class="container">
-    <p><a href="/JEDI/research/">&larr; Back</a></p>
-    <h1 style="color:var(--ring, var(--r7));">K+ Channel Research</h1>
-    <p>Module stub. Build prompt pending.</p>
-    <footer>LIGHT TO LIGHT · 510,510</footer>
+    <p><a href="/JEDI/research/">&larr; Research Library</a></p>
+    <h1 style="color:#FFCC00;">K+ Channel Research</h1>
+    <p style="opacity:0.8;">Potassium channel gating mechanics — the molecular basis of the R2 gate.</p>
+    <div style="margin-top:24px;">
+      <div class="card" style="border-left-color:#FFCC00;">
+    <h3 style="color:#FFCC00;">The Gate at Molecular Level</h3>
+    <p>K+ channels are voltage-gated. They open and close based on membrane potential. The thalamic gate (LGN) uses the same principle at neural scale — state-dependent filtering.</p>
   </div>
+  <div class="grid grid-2">
+    <a href="/JEDI/research/k-gate/spray/" class="card" style="text-decoration:none;border-left-color:#FFCC00;">
+      <strong>Nasal Spray Spec</strong><p style="font-size:13px;opacity:0.7;">K-gate delivery mechanism</p>
+    </a>
+    <a href="/JEDI/research/k-gate/vagal/" class="card" style="text-decoration:none;border-left-color:#22CC66;">
+      <strong>Vagal Gate Circuit</strong><p style="font-size:13px;opacity:0.7;">Vagus nerve &harr; gate connection</p>
+    </a>
+  </div>
+    </div>
+    <div id="md-content" style="margin-top:24px;"></div>
+    <footer>LIGHT TO LIGHT &middot; 510,510</footer>
+  </div>
+  <script src="/JEDI/turtle.html" type="module"></script>
+  <script>window.turtle?.init?.({ ring: 'r2', module: 'k-gate' });</script>
 </body>
 </html>

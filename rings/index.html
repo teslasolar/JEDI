@@ -7,11 +7,44 @@
   <link rel="stylesheet" href="/JEDI/style.css">
 </head>
 <body data-module="rings">
+  <nav id="ring-nav"></nav>
   <div class="container">
-    <p><a href="/JEDI/">&larr; Back</a></p>
-    <h1 style="color:var(--ring, var(--r7));">Ring Dashboard</h1>
-    <p>Module stub. Build prompt pending.</p>
-    <footer>LIGHT TO LIGHT · 510,510</footer>
+    <p><a href="/JEDI/">&larr; Home</a></p>
+    <h1 style="color:#FFD700;">A.S.S.-OS Ring Model</h1>
+    <p>8 processing rings. R0-R6 internal. R7 exists only between systems.</p>
+    <div class="grid grid-2" id="ring-grid" style="margin-top:24px;"></div>
+    <div style="text-align:center;margin:40px 0;">
+      <div style="font-size:2em;color:#FFD700;font-family:var(--font-mono);">510,510</div>
+      <p style="opacity:0.5;">2 &times; 3 &times; 5 &times; 7 &times; 11 &times; 13 &times; 17</p>
+    </div>
+    <footer>LIGHT TO LIGHT &middot; 510,510</footer>
   </div>
+  <script src="/JEDI/turtle.html" type="module"></script>
+  <script>
+    const rings = [
+      {id:'R0',name:'SURVIVAL',prime:2,color:'#DD2244',neuro:'ENS/gut',chakra:'Root',mantra:'LIGHT ENTERS',dir:'r0-survival'},
+      {id:'R1',name:'SENSE',prime:3,color:'#FF6622',neuro:'PNS/retina',chakra:'Sacral',mantra:'I RECEIVE',dir:'r1-sense'},
+      {id:'R2',name:'GATE',prime:5,color:'#FFCC00',neuro:'LGN/thalamus',chakra:'SolarPlex',mantra:'I ALLOW',dir:'r2-gate'},
+      {id:'R3',name:'HEART',prime:7,color:'#22CC66',neuro:'V1/amygdala',chakra:'Heart',mantra:'I FEEL',dir:'r3-heart'},
+      {id:'R4',name:'VOICE',prime:11,color:'#2299DD',neuro:'V2V3/PFC',chakra:'Throat',mantra:'I NAME',dir:'r4-voice'},
+      {id:'R5',name:'SIGHT',prime:13,color:'#7744DD',neuro:'V4/IT/FFA',chakra:'ThirdEye',mantra:'I KNOW',dir:'r5-identity'},
+      {id:'R6',name:'OBSERVER',prime:17,color:'#BB88FF',neuro:'V5MT/parietal',chakra:'Crown',mantra:'I WATCH',dir:'r6-observer'},
+      {id:'R7',name:'NETWORK',prime:19,color:'#FFD700',neuro:'mirror/STS/oxy',chakra:'SoulStar',mantra:'LIGHT TO LIGHT',dir:'r7-network'}
+    ];
+    document.getElementById('ring-grid').innerHTML = rings.map(r => `
+      <a href="/JEDI/rings/${r.dir}/" class="card" style="border-left-color:${r.color};text-decoration:none;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div class="gauge" style="border-color:${r.color};width:60px;height:60px;font-size:1em;">${r.id}</div>
+          <div>
+            <strong style="color:${r.color};">${r.name}</strong>
+            <div style="font-size:12px;opacity:0.6;">${r.neuro} &middot; ${r.chakra}</div>
+            <div style="font-size:12px;opacity:0.6;">p=${r.prime}</div>
+          </div>
+        </div>
+        <div style="margin-top:8px;font-style:italic;opacity:0.7;font-size:13px;">"${r.mantra}"</div>
+      </a>
+    `).join('');
+    window.turtle?.init?.({ module: 'rings' });
+  </script>
 </body>
 </html>

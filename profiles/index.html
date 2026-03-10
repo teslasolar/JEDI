@@ -7,11 +7,149 @@
   <link rel="stylesheet" href="/JEDI/style.css">
 </head>
 <body data-module="profiles">
+  <nav id="ring-nav"></nav>
   <div class="container">
-    <p><a href="/JEDI/">&larr; Back</a></p>
-    <h1 style="color:var(--ring, var(--r7));">Profile Builder</h1>
-    <p>Module stub. Build prompt pending.</p>
-    <footer>LIGHT TO LIGHT · 510,510</footer>
+    <p><a href="/JEDI/">&larr; Home</a></p>
+    <h1 style="color:#BB88FF;">Ring Profile Builder</h1>
+    <p>Assess your R0-R7 ring strengths. Rate each ring 1-10.</p>
+
+    <div id="profile-form" style="margin-top:24px;"></div>
+
+    <div style="text-align:center;margin:20px 0;">
+      <button class="btn" onclick="saveProfile()">Save Profile</button>
+      <button class="btn" style="background:#333;color:#fff8e7;" onclick="exportProfile()">Export JSON</button>
+    </div>
+
+    <canvas id="radar" width="400" height="400" style="display:block;margin:20px auto;"></canvas>
+
+    <h2 style="color:#BB88FF;margin-top:30px;">Existing Profiles</h2>
+    <div class="grid grid-3">
+      <a href="/JEDI/profiles/thomas/" class="card" style="text-decoration:none;border-left-color:#2299DD;">
+        <strong>Thomas</strong><p style="font-size:13px;opacity:0.7;">Creator profile</p>
+      </a>
+      <a href="/JEDI/profiles/simon/" class="card" style="text-decoration:none;border-left-color:#22CC66;">
+        <strong>Simon</strong><p style="font-size:13px;opacity:0.7;">Co-creator profile</p>
+      </a>
+      <a href="/JEDI/profiles/template/" class="card" style="text-decoration:none;border-left-color:#FFD700;">
+        <strong>Template</strong><p style="font-size:13px;opacity:0.7;">Blank template</p>
+      </a>
+    </div>
+
+    <footer>LIGHT TO LIGHT &middot; 510,510</footer>
   </div>
+  <script src="/JEDI/turtle.html" type="module"></script>
+  <script>
+    const rings = [
+      {id:'R0',name:'SURVIVAL',color:'#DD2244'},
+      {id:'R1',name:'SENSE',color:'#FF6622'},
+      {id:'R2',name:'GATE',color:'#FFCC00'},
+      {id:'R3',name:'HEART',color:'#22CC66'},
+      {id:'R4',name:'VOICE',color:'#2299DD'},
+      {id:'R5',name:'SIGHT',color:'#7744DD'},
+      {id:'R6',name:'OBSERVER',color:'#BB88FF'},
+      {id:'R7',name:'NETWORK',color:'#FFD700'}
+    ];
+
+    const saved = JSON.parse(localStorage.getItem('jedi:profile') || '{}');
+
+    document.getElementById('profile-form').innerHTML = rings.map(r => `
+      <div class="ring-bar">
+        <span class="ring-bar-label" style="color:${r.color};">${r.id}</span>
+        <span style="width:80px;font-size:12px;">${r.name}</span>
+        <input type="range" min="1" max="10" value="${saved[r.id] || 5}" id="val-${r.id}"
+               oninput="updateRadar()" style="flex:1;">
+        <span id="num-${r.id}" style="width:24px;text-align:right;">${saved[r.id] || 5}</span>
+      </div>
+    `).join('');
+
+    document.querySelectorAll('input[type=range]').forEach(el => {
+      el.addEventListener('input', () => {
+        document.getElementById('num-' + el.id.split('-')[1]).textContent = el.value;
+      });
+    });
+
+    function getValues() {
+      const v = {};
+      rings.forEach(r => v[r.id] = parseInt(document.getElementById('val-' + r.id).value));
+      return v;
+    }
+
+    function saveProfile() {
+      localStorage.setItem('jedi:profile', JSON.stringify(getValues()));
+      alert('Profile saved!');
+    }
+
+    function exportProfile() {
+      const blob = new Blob([JSON.stringify(getValues(), null, 2)], {type:'application/json'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'jedi-profile.json';
+      a.click();
+    }
+
+    function updateRadar() {
+      const c = document.getElementById('radar');
+      const ctx = c.getContext('2d');
+      const cx = c.width/2, cy = c.height/2, maxR = 160;
+      const vals = getValues();
+      ctx.clearRect(0, 0, c.width, c.height);
+
+      // Grid
+      for (let i = 2; i <= 10; i += 2) {
+        ctx.beginPath();
+        const r = (i / 10) * maxR;
+        for (let j = 0; j <= 8; j++) {
+          const angle = (j / 8) * Math.PI * 2 - Math.PI / 2;
+          const x = cx + Math.cos(angle) * r;
+          const y = cy + Math.sin(angle) * r;
+          j === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        }
+        ctx.strokeStyle = '#1a1a2a';
+        ctx.stroke();
+      }
+
+      // Labels
+      rings.forEach((ring, i) => {
+        const angle = (i / 8) * Math.PI * 2 - Math.PI / 2;
+        const lx = cx + Math.cos(angle) * (maxR + 20);
+        const ly = cy + Math.sin(angle) * (maxR + 20);
+        ctx.fillStyle = ring.color;
+        ctx.font = '11px DM Mono, monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(ring.id, lx, ly + 4);
+      });
+
+      // Data polygon
+      ctx.beginPath();
+      rings.forEach((ring, i) => {
+        const angle = (i / 8) * Math.PI * 2 - Math.PI / 2;
+        const v = (vals[ring.id] || 5) / 10;
+        const x = cx + Math.cos(angle) * maxR * v;
+        const y = cy + Math.sin(angle) * maxR * v;
+        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      });
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(255, 215, 0, 0.15)';
+      ctx.fill();
+      ctx.strokeStyle = '#FFD700';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Data points
+      rings.forEach((ring, i) => {
+        const angle = (i / 8) * Math.PI * 2 - Math.PI / 2;
+        const v = (vals[ring.id] || 5) / 10;
+        const x = cx + Math.cos(angle) * maxR * v;
+        const y = cy + Math.sin(angle) * maxR * v;
+        ctx.beginPath();
+        ctx.arc(x, y, 4, 0, Math.PI * 2);
+        ctx.fillStyle = ring.color;
+        ctx.fill();
+      });
+    }
+
+    updateRadar();
+    window.turtle?.init?.({ module: 'profiles' });
+  </script>
 </body>
 </html>

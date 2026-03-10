@@ -6,12 +6,87 @@
   <title>Iris Trainer — PROJECT JEDI</title>
   <link rel="stylesheet" href="/JEDI/style.css">
 </head>
-<body data-module="trainer">
+<body data-module="iris-trainer">
+  <nav id="ring-nav"></nav>
   <div class="container">
-    <p><a href="/JEDI/iris/">&larr; Back</a></p>
-    <h1 style="color:var(--ring, var(--r7));">Iris Trainer</h1>
-    <p>Module stub. Build prompt pending.</p>
-    <footer>LIGHT TO LIGHT · 510,510</footer>
+    <p><a href="/JEDI/iris/">&larr; Iris Factory</a></p>
+    <h1 style="color:#FF6622;">Iris Trainer</h1>
+    <p>Ring-by-ring guided meditation. Progress through each ring sequentially.</p>
+
+    <div id="trainer-ring" style="text-align:center;margin:30px 0;">
+      <div class="gauge" id="current-ring" style="width:120px;height:120px;font-size:2em;margin:0 auto;"></div>
+      <h2 id="ring-name" style="margin-top:16px;"></h2>
+      <p id="ring-instruction" style="max-width:500px;margin:12px auto;opacity:0.8;"></p>
+    </div>
+
+    <div style="text-align:center;margin:20px 0;">
+      <div id="timer" style="font-size:3em;font-family:var(--font-mono);color:#FFD700;">0:00</div>
+      <button class="btn" id="start-btn" onclick="toggleTimer()" style="margin-top:12px;">Start Session</button>
+      <button class="btn" onclick="nextRing()" style="margin-top:12px;background:#333;color:#fff8e7;">Next Ring &rarr;</button>
+    </div>
+
+    <div class="progress" style="margin:20px 0;">
+      <div class="progress-fill" id="progress" style="width:12.5%;"></div>
+    </div>
+    <footer>LIGHT TO LIGHT &middot; 510,510</footer>
   </div>
+  <script src="/JEDI/turtle.html" type="module"></script>
+  <script>
+    const stages = [
+      {id:'R0',name:'SURVIVAL',color:'#DD2244',time:60,instruction:'Close your eyes. Feel your feet on the ground. Notice your gut. Let it settle.'},
+      {id:'R1',name:'SENSE',color:'#FF6622',time:90,instruction:'Open peripheral vision. Notice sounds without naming them. Feel temperature on skin.'},
+      {id:'R2',name:'GATE',color:'#FFCC00',time:120,instruction:'Breathe 4 counts in, 6 counts out. Feel the gate opening. Let internal state soften.'},
+      {id:'R3',name:'HEART',color:'#22CC66',time:120,instruction:'Visualize a flaming rose at your heart center. Let it radiate warmth outward.'},
+      {id:'R4',name:'VOICE',color:'#2299DD',time:90,instruction:'Notice your inner narrator. Listen without engaging. Let stories pass like clouds.'},
+      {id:'R5',name:'SIGHT',color:'#7744DD',time:90,instruction:'Observe color behind closed eyelids. Notice shapes forming. Let identity soften.'},
+      {id:'R6',name:'OBSERVER',color:'#BB88FF',time:120,instruction:'Watch the watcher. Notice the 300ms delay. Rest in pure awareness.'},
+      {id:'R7',name:'NETWORK',color:'#FFD700',time:60,instruction:'Extend awareness outward. Feel connection to all systems. LIGHT TO LIGHT.'}
+    ];
+    let current = 0, timer = null, elapsed = 0;
+
+    function render() {
+      const s = stages[current];
+      document.getElementById('current-ring').textContent = s.id;
+      document.getElementById('current-ring').style.borderColor = s.color;
+      document.getElementById('ring-name').textContent = s.name;
+      document.getElementById('ring-name').style.color = s.color;
+      document.getElementById('ring-instruction').textContent = s.instruction;
+      document.getElementById('progress').style.width = ((current + 1) / stages.length * 100) + '%';
+      document.getElementById('progress').style.background = s.color;
+      document.getElementById('timer').textContent = formatTime(0);
+      elapsed = 0;
+    }
+
+    function formatTime(s) { return Math.floor(s/60) + ':' + String(s%60).padStart(2,'0'); }
+
+    function toggleTimer() {
+      if (timer) {
+        clearInterval(timer);
+        timer = null;
+        document.getElementById('start-btn').textContent = 'Resume';
+      } else {
+        timer = setInterval(() => {
+          elapsed++;
+          document.getElementById('timer').textContent = formatTime(elapsed);
+          if (elapsed >= stages[current].time) {
+            clearInterval(timer);
+            timer = null;
+            document.getElementById('start-btn').textContent = 'Complete';
+          }
+        }, 1000);
+        document.getElementById('start-btn').textContent = 'Pause';
+      }
+    }
+
+    function nextRing() {
+      if (timer) { clearInterval(timer); timer = null; }
+      current = (current + 1) % stages.length;
+      render();
+      document.getElementById('start-btn').textContent = 'Start Session';
+    }
+
+    render();
+    window.turtle?.init?.({ module: 'iris-trainer' });
+  </script>
 </body>
 </html>

@@ -2,9 +2,14 @@
 <!-- Load via: <script src="/JEDI/turtle.html" type="module"> -->
 <script type="module">
 const JEDI_BASE = '/JEDI';
+const RING_NAMES = ['survival','sense','gate','heart','voice','identity','observer','network'];
+const RING_COLORS = ['#DD2244','#FF6622','#FFCC00','#22CC66','#2299DD','#7744DD','#BB88FF','#FFD700'];
+const RING_IDS = ['r0','r1','r2','r3','r4','r5','r6','r7'];
 
 window.turtle = {
-  // Core init
+  JEDI_BASE,
+  RING_NAMES, RING_COLORS, RING_IDS,
+
   async init({ ring, module } = {}) {
     this.ring = ring;
     this.module = module;
@@ -12,7 +17,7 @@ window.turtle = {
     await this.md.autoload();
   },
 
-  // Markdown runner
+  // ── Markdown Runner ──
   md: {
     async autoload() {
       try {
@@ -26,52 +31,174 @@ window.turtle = {
     },
 
     render(md) {
-      return md
-        .replace(/^### (.+)$/gm, '<h3>$1</h3>')
-        .replace(/^## (.+)$/gm, '<h2>$1</h2>')
-        .replace(/^# (.+)$/gm, '<h1>$1</h1>')
-        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-        .replace(/\*(.+?)\*/g, '<em>$1</em>')
-        .replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>')
-        .replace(/^- (.+)$/gm, '<li>$1</li>')
-        .replace(/^---$/gm, '<hr>')
-        .replace(/\n\n/g, '</p><p>')
-        .replace(/^(.+)$/gm, (m) => {
-          if (m.startsWith('<')) return m;
-          return m;
-        });
+      let html = md;
+      // Fenced code with extensions
+      html = html.replace(/```run:javascript\n([\s\S]*?)```/g, (_, code) => {
+        const id = 'run_' + Math.random().toString(36).slice(2, 8);
+        return `<div class="exercise"><pre><code>${this._esc(code)}</code></pre><button class="btn" onclick="(function(){try{${code.replace(/"/g, '&quot;')}}catch(e){alert(e)}})()">Run</button></div>`;
+      });
+      html = html.replace(/```breath:(\d+):(\d+)```/g, (_, i, o) =>
+        `<div class="exercise" data-breath-in="${i}" data-breath-out="${o}"><div class="breath-circle"><span>${i}:${o}</span></div><button class="btn" onclick="turtle.breath.start(this.parentElement,${i},${o})">Start</button></div>`
+      );
+      html = html.replace(/```ring:(R\d)```/g, (_, r) => {
+        const idx = parseInt(r[1]);
+        return `<div class="card ring-${r.toLowerCase()}"><span class="ring-dot" style="background:${RING_COLORS[idx]}"></span> <strong>${r}</strong> — ${RING_NAMES[idx].toUpperCase()}</div>`;
+      });
+      html = html.replace(/```cite:([\w-]+)```/g, (_, id) =>
+        `<a href="https://www.cia.gov/readingroom/document/${id}" target="_blank" class="tag">${id}</a>`
+      );
+      html = html.replace(/```profile:(\w+)```/g, (_, name) =>
+        `<a href="${JEDI_BASE}/profiles/${name}/" class="card"><strong>${name}</strong> ring profile</a>`
+      );
+      html = html.replace(/\[!exercise\]\s*\n([\s\S]*?)(?=\n##|\n\[!|\n$)/g, (_, body) =>
+        `<div class="exercise">${this._inline(body)}</div>`
+      );
+      // Standard markdown
+      html = html.replace(/^#### (.+)$/gm, '<h4>$1</h4>');
+      html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+      html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+      html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+      html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) =>
+        `<pre><code>${this._esc(code)}</code></pre>`
+      );
+      html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+      html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+      html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+      html = html.replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>');
+      html = html.replace(/^\- (.+)$/gm, '<li>$1</li>');
+      html = html.replace(/(<li>[\s\S]*?<\/li>)/g, '<ul>$1</ul>');
+      html = html.replace(/<\/ul>\s*<ul>/g, '');
+      html = html.replace(/^---$/gm, '<hr>');
+      html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
+      html = html.replace(/\n\n/g, '<br><br>');
+      return html;
+    },
+
+    _esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); },
+    _inline(s) {
+      return s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+              .replace(/\*(.+?)\*/g, '<em>$1</em>')
+              .replace(/\n/g, '<br>');
     }
   },
 
-  // Navigation
+  // ── Navigation ──
   nav: {
     build() {
       const nav = document.getElementById('ring-nav');
       if (!nav) return;
-      const rings = [
-        { id: 'r0', c: '#DD2244', n: 'R0' },
-        { id: 'r1', c: '#FF6622', n: 'R1' },
-        { id: 'r2', c: '#FFCC00', n: 'R2' },
-        { id: 'r3', c: '#22CC66', n: 'R3' },
-        { id: 'r4', c: '#2299DD', n: 'R4' },
-        { id: 'r5', c: '#7744DD', n: 'R5' },
-        { id: 'r6', c: '#BB88FF', n: 'R6' },
-        { id: 'r7', c: '#FFD700', n: 'R7' }
-      ];
       const current = document.body.dataset.ring;
-      nav.innerHTML = rings.map(r => {
-        const active = r.id === current ? ' active' : '';
-        return `<a href="${JEDI_BASE}/rings/${r.id}-${r.id === 'r0' ? 'survival' : r.id === 'r1' ? 'sense' : r.id === 'r2' ? 'gate' : r.id === 'r3' ? 'heart' : r.id === 'r4' ? 'voice' : r.id === 'r5' ? 'identity' : r.id === 'r6' ? 'observer' : 'network'}/" class="ring-dot${active}" style="--ring:${r.c};background:${r.c};" title="${r.n}"></a>`;
-      }).join('');
+      nav.innerHTML = `<a href="${JEDI_BASE}/" class="ring-dot" style="background:#fff8e7;width:8px;height:8px;" title="Home"></a>` +
+        RING_IDS.map((id, i) => {
+          const active = id === current ? ' active' : '';
+          return `<a href="${JEDI_BASE}/rings/${id}-${RING_NAMES[i]}/" class="ring-dot${active}" style="--ring:${RING_COLORS[i]};background:${RING_COLORS[i]};" title="R${i} ${RING_NAMES[i]}"></a>`;
+        }).join('');
     }
   },
 
-  // Storage API
+  // ── Breath Timer ──
+  breath: {
+    _timer: null,
+    start(el, inhale = 4, exhale = 6) {
+      if (this._timer) { this.stop(el); return; }
+      const circle = el.querySelector('.breath-circle');
+      const span = circle.querySelector('span');
+      let phase = 'inhale', count = inhale;
+      const tick = () => {
+        count--;
+        span.textContent = `${phase === 'inhale' ? 'IN' : 'OUT'} ${count}`;
+        if (count <= 0) {
+          phase = phase === 'inhale' ? 'exhale' : 'inhale';
+          count = phase === 'inhale' ? inhale : exhale;
+          circle.classList.toggle('inhale', phase === 'inhale');
+          circle.classList.toggle('exhale', phase === 'exhale');
+        }
+      };
+      circle.classList.add('inhale');
+      span.textContent = `IN ${inhale}`;
+      this._timer = setInterval(tick, 1000);
+      el.querySelector('.btn').textContent = 'Stop';
+    },
+    stop(el) {
+      clearInterval(this._timer);
+      this._timer = null;
+      const circle = el.querySelector('.breath-circle');
+      circle.classList.remove('inhale', 'exhale');
+      circle.querySelector('span').textContent = el.dataset.breathIn + ':' + el.dataset.breathOut;
+      el.querySelector('.btn').textContent = 'Start';
+    }
+  },
+
+  // ── MQTT Bridge ──
+  mqtt: {
+    client: null,
+    subs: {},
+    connected: false,
+
+    connect(broker = 'wss://broker.hivemq.com:8884/mqtt') {
+      if (typeof Paho === 'undefined') {
+        const s = document.createElement('script');
+        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.1.0/paho-mqtt.min.js';
+        s.onload = () => this._doConnect(broker);
+        document.head.appendChild(s);
+      } else {
+        this._doConnect(broker);
+      }
+    },
+
+    _doConnect(broker) {
+      const url = new URL(broker);
+      const clientId = 'jedi_' + Math.random().toString(36).slice(2, 10);
+      this.client = new Paho.Client(url.hostname, Number(url.port), url.pathname, clientId);
+      this.client.onMessageArrived = (msg) => {
+        const handlers = this.subs[msg.destinationName] || [];
+        const data = (() => { try { return JSON.parse(msg.payloadString); } catch { return msg.payloadString; } })();
+        handlers.forEach(fn => fn(data, msg.destinationName));
+      };
+      this.client.onConnectionLost = () => { this.connected = false; };
+      this.client.connect({
+        onSuccess: () => {
+          this.connected = true;
+          Object.keys(this.subs).forEach(t => this.client.subscribe(t));
+        },
+        useSSL: url.protocol === 'wss:',
+        timeout: 10
+      });
+    },
+
+    subscribe(topic, callback) {
+      if (!this.subs[topic]) this.subs[topic] = [];
+      this.subs[topic].push(callback);
+      if (this.connected) this.client.subscribe(topic);
+    },
+
+    publish(topic, data) {
+      if (!this.connected) return;
+      const msg = new Paho.Message(typeof data === 'string' ? data : JSON.stringify(data));
+      msg.destinationName = topic;
+      this.client.send(msg);
+    }
+  },
+
+  // ── Storage API ──
   api: {
     storage: {
-      get(key) { return localStorage.getItem('jedi:' + key); },
-      set(key, val) { localStorage.setItem('jedi:' + key, val); },
+      get(key) {
+        const v = localStorage.getItem('jedi:' + key);
+        try { return JSON.parse(v); } catch { return v; }
+      },
+      set(key, val) {
+        localStorage.setItem('jedi:' + key, typeof val === 'string' ? val : JSON.stringify(val));
+      },
       remove(key) { localStorage.removeItem('jedi:' + key); },
+      keys() {
+        const out = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i);
+          if (k.startsWith('jedi:')) out.push(k.slice(5));
+        }
+        return out;
+      },
       export() {
         const data = {};
         for (let i = 0; i < localStorage.length; i++) {
@@ -79,6 +206,17 @@ window.turtle = {
           if (k.startsWith('jedi:')) data[k] = localStorage.getItem(k);
         }
         return data;
+      },
+      download() {
+        const blob = new Blob([JSON.stringify(this.export(), null, 2)], { type: 'application/json' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'jedi-data.json';
+        a.click();
+      },
+      import(json) {
+        const data = typeof json === 'string' ? JSON.parse(json) : json;
+        Object.entries(data).forEach(([k, v]) => localStorage.setItem(k, v));
       }
     }
   }
