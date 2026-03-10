@@ -48,12 +48,12 @@
       const all = [...defaultSongs, ...custom];
       const colors = {'R0':'#DD2244','R1':'#FF6622','R2':'#FFCC00','R3':'#22CC66','R4':'#2299DD','R5':'#7744DD','R6':'#BB88FF','R7':'#FFD700'};
       document.getElementById('song-grid').innerHTML = all.map(s => `
-        <div class="song-card" style="border-left:3px solid ${colors[s.ring] || '#FFD700'};">
+        <a href="/JEDI/songs/${s.slug}/" class="song-card" style="border-left:3px solid ${colors[s.ring] || '#FFD700'};display:block;text-decoration:none;color:var(--cream);">
           <h3 style="color:${colors[s.ring] || '#FFD700'};">${s.title}</h3>
           <p style="font-size:12px;opacity:0.6;">${s.style} &middot; ${s.ring}</p>
           ${s.lyrics ? '<pre class="lyrics">' + s.lyrics + '</pre>' : ''}
-          ${s.lyrics ? '<button class="btn" style="font-size:12px;padding:4px 10px;" onclick="navigator.clipboard.writeText(this.previousElementSibling.textContent)">Copy Prompt</button>' : ''}
-        </div>
+          ${s.lyrics ? '<button class="btn" style="font-size:12px;padding:4px 10px;" onclick="event.preventDefault();navigator.clipboard.writeText(this.previousElementSibling.textContent)">Copy Prompt</button>' : ''}
+        </a>
       `).join('');
     }
 
