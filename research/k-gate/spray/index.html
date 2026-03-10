@@ -9,13 +9,40 @@
 <body data-ring="r2" data-module="k-gate/spray">
   <nav id="ring-nav"></nav>
   <div class="container">
-    <p><a href="/JEDI/research/k-gate/">&larr; Backk-gate/</a></p>
-    <h1 style="color:#FFCC00;">Nasal Spray Spec</h1>
-    <p style="opacity:0.8;">FDA-pathway nasal spray delivery spec for K+ channel modulation.</p>
+    <p><a href="/JEDI/research/k-gate/">&larr; K-Gate Research</a></p>
+    <h1 style="color:#FFCC00;">Nasal Spray Delivery Spec</h1>
+    <p style="opacity:0.8;">FDA-pathway nasal spray for K+ channel modulation — R2 Gate interface.</p>
     <div style="margin-top:24px;">
       <div class="card" style="border-left-color:#FFCC00;">
-    <p>Research document placeholder. Content from KGATE-NASAL-SPRAY-FDA-SPEC.docx to be ported.</p>
-  </div>
+        <h3 style="color:#FFCC00;">Mechanism</h3>
+        <p>Potassium (K+) channels are the gate's hardware. When K+ channels open, neurons hyperpolarize — the gate closes, reducing excitability. When K+ channels close, neurons depolarize — the gate opens, increasing signal throughput.</p>
+        <p style="margin-top:8px;">Nasal delivery bypasses the blood-brain barrier via olfactory and trigeminal nerve pathways, reaching the LGN (R2) within minutes.</p>
+      </div>
+      <div class="card" style="border-left-color:#FFCC00;margin-top:12px;">
+        <h3 style="color:#FFCC00;">Delivery Parameters</h3>
+        <table>
+          <tr><th>Parameter</th><th>Value</th></tr>
+          <tr><td>Route</td><td>Intranasal (olfactory epithelium)</td></tr>
+          <tr><td>Target</td><td>Kv channels in thalamic relay neurons</td></tr>
+          <tr><td>Onset</td><td>5-15 minutes (trigeminal pathway)</td></tr>
+          <tr><td>Duration</td><td>4-6 hours</td></tr>
+          <tr><td>Ring mapping</td><td>R2 (Gate) — LGN/thalamus</td></tr>
+        </table>
+      </div>
+      <div class="card" style="border-left-color:#FFCC00;margin-top:12px;">
+        <h3 style="color:#FFCC00;">FDA Pathway</h3>
+        <ul style="list-style:disc;padding-left:20px;">
+          <li>505(b)(2) pathway — reference existing K+ channel modulators</li>
+          <li>Nasal device: metered-dose spray, 100&mu;L per actuation</li>
+          <li>Stability: 24-month shelf life at 25&deg;C / 60% RH</li>
+          <li>Preservative-free single-dose units preferred</li>
+        </ul>
+      </div>
+      <div class="card" style="border-left-color:#FFCC00;margin-top:12px;">
+        <h3 style="color:#FFCC00;">Ring Model Integration</h3>
+        <p>K+ channel modulation at R2 affects all downstream processing. Opening the gate pharmacologically mirrors what 4:6 breath does mechanically — shifting autonomic balance toward parasympathetic dominance.</p>
+        <p style="margin-top:8px;">Combined protocol: breath work (R2 software) + K+ modulation (R2 hardware) = maximum gate aperture.</p>
+      </div>
     </div>
     <div id="md-content" style="margin-top:24px;"></div>
     <footer>LIGHT TO LIGHT &middot; 510,510</footer>
