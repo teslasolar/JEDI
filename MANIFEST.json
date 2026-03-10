@@ -1,0 +1,65 @@
+{
+  "name": "PROJECT JEDI",
+  "version": "1.0.0",
+  "signature": 510510,
+  "deploy": "teslasolar.github.io/JEDI/",
+  "rings": [
+    {"id":"R0","name":"SURVIVAL","prime":2,"color":"#DD2244","hz":55,"neuro":"ENS/gut","chakra":"Root","mantra":"LIGHT ENTERS"},
+    {"id":"R1","name":"SENSE","prime":3,"color":"#FF6622","hz":110,"neuro":"PNS/retina","chakra":"Sacral","mantra":"I RECEIVE"},
+    {"id":"R2","name":"GATE","prime":5,"color":"#FFCC00","hz":165,"neuro":"LGN/thalamus","chakra":"SolarPlex","mantra":"I ALLOW"},
+    {"id":"R3","name":"HEART","prime":7,"color":"#22CC66","hz":275,"neuro":"V1/amygdala","chakra":"Heart","mantra":"I FEEL"},
+    {"id":"R4","name":"VOICE","prime":11,"color":"#2299DD","hz":385,"neuro":"V2V3/PFC","chakra":"Throat","mantra":"I NAME"},
+    {"id":"R5","name":"SIGHT","prime":13,"color":"#7744DD","hz":605,"neuro":"V4/IT/FFA","chakra":"ThirdEye","mantra":"I KNOW"},
+    {"id":"R6","name":"OBSERVER","prime":17,"color":"#BB88FF","hz":935,"neuro":"V5MT/parietal","chakra":"Crown","mantra":"I WATCH"},
+    {"id":"R7","name":"NETWORK","prime":19,"color":"#FFD700","hz":null,"neuro":"mirror/STS/oxy","chakra":"SoulStar","mantra":"LIGHT TO LIGHT"}
+  ],
+  "pages": [
+    {"path":"/","title":"JEDI Home","ring":null},
+    {"path":"/rings/","title":"Ring Dashboard","ring":null},
+    {"path":"/rings/r0-survival/","title":"R0 Survival","ring":"R0"},
+    {"path":"/rings/r1-sense/","title":"R1 Sense","ring":"R1"},
+    {"path":"/rings/r2-gate/","title":"R2 Gate","ring":"R2"},
+    {"path":"/rings/r3-heart/","title":"R3 Heart","ring":"R3"},
+    {"path":"/rings/r4-voice/","title":"R4 Voice","ring":"R4"},
+    {"path":"/rings/r5-identity/","title":"R5 Identity","ring":"R5"},
+    {"path":"/rings/r6-observer/","title":"R6 Observer","ring":"R6"},
+    {"path":"/rings/r7-network/","title":"R7 Network","ring":"R7"},
+    {"path":"/iris/","title":"Iris Factory","ring":"R1"},
+    {"path":"/iris/trainer/","title":"Iris Trainer","ring":null},
+    {"path":"/iris/chakra/","title":"Chakra Map","ring":null},
+    {"path":"/lightbringer/","title":"LIGHTBRINGER","ring":null},
+    {"path":"/research/","title":"Research Library","ring":null},
+    {"path":"/songs/","title":"Song Factory","ring":null},
+    {"path":"/profiles/","title":"Profile Builder","ring":null},
+    {"path":"/tools/","title":"Tools","ring":null},
+    {"path":"/tools/breath/","title":"Breath Timer","ring":"R2"},
+    {"path":"/tags/","title":"Tag Provider","ring":null}
+  ],
+  "docs": [
+    {"slug":"eye-rings","title":"Seven Rings Behind Your Eyes","path":"/research/eye-rings/"},
+    {"slug":"dark-side","title":"Dark Side / Light Side","path":"/research/dark-side/"},
+    {"slug":"neglect-loop","title":"Neglect Feedback Loop","path":"/research/neglect-loop/"},
+    {"slug":"sad","title":"S.A.D. Analysis","path":"/research/sad/"},
+    {"slug":"quasar","title":"Quasar Architecture","path":"/research/quasar/"},
+    {"slug":"k-gate","title":"K+ Channel Research","path":"/research/k-gate/"},
+    {"slug":"light-to-light","title":"Light to Light","path":"/research/light-to-light/"},
+    {"slug":"morning-star","title":"Morning Star Research","path":"/research/morning-star/"}
+  ],
+  "songs": [
+    {"slug":"thunderdome","title":"Thunderdome"},
+    {"slug":"metatron","title":"Metatron"},
+    {"slug":"light-to-light","title":"Light to Light"},
+    {"slug":"deutschlandschwein","title":"Deutschlandschwein"},
+    {"slug":"translator-kitka","title":"The Translator Kitka"},
+    {"slug":"subscribe","title":"Subscribe"},
+    {"slug":"open-gate","title":"The Open Gate"},
+    {"slug":"simon-gate","title":"Simon Gate"},
+    {"slug":"short-bus-wheels","title":"Short Bus Wheels"},
+    {"slug":"grannys-number","title":"Granny's Got Your Number"}
+  ],
+  "profiles": [
+    {"slug":"thomas","name":"Thomas"},
+    {"slug":"simon","name":"Simon"},
+    {"slug":"template","name":"Template"}
+  ]
+}

@@ -1,0 +1,86 @@
+<!-- turtle.html — JEDI Universal Backend Module -->
+<!-- Load via: <script src="/JEDI/turtle.html" type="module"> -->
+<script type="module">
+const JEDI_BASE = '/JEDI';
+
+window.turtle = {
+  // Core init
+  async init({ ring, module } = {}) {
+    this.ring = ring;
+    this.module = module;
+    this.nav.build();
+    await this.md.autoload();
+  },
+
+  // Markdown runner
+  md: {
+    async autoload() {
+      try {
+        const dir = window.location.pathname.replace(/index\.html$/, '');
+        const res = await fetch(dir + 'README.md');
+        if (!res.ok) return;
+        const md = await res.text();
+        const target = document.getElementById('md-content');
+        if (target) target.innerHTML = this.render(md);
+      } catch (e) { /* no README */ }
+    },
+
+    render(md) {
+      return md
+        .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+        .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+        .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.+?)\*/g, '<em>$1</em>')
+        .replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>')
+        .replace(/^- (.+)$/gm, '<li>$1</li>')
+        .replace(/^---$/gm, '<hr>')
+        .replace(/\n\n/g, '</p><p>')
+        .replace(/^(.+)$/gm, (m) => {
+          if (m.startsWith('<')) return m;
+          return m;
+        });
+    }
+  },
+
+  // Navigation
+  nav: {
+    build() {
+      const nav = document.getElementById('ring-nav');
+      if (!nav) return;
+      const rings = [
+        { id: 'r0', c: '#DD2244', n: 'R0' },
+        { id: 'r1', c: '#FF6622', n: 'R1' },
+        { id: 'r2', c: '#FFCC00', n: 'R2' },
+        { id: 'r3', c: '#22CC66', n: 'R3' },
+        { id: 'r4', c: '#2299DD', n: 'R4' },
+        { id: 'r5', c: '#7744DD', n: 'R5' },
+        { id: 'r6', c: '#BB88FF', n: 'R6' },
+        { id: 'r7', c: '#FFD700', n: 'R7' }
+      ];
+      const current = document.body.dataset.ring;
+      nav.innerHTML = rings.map(r => {
+        const active = r.id === current ? ' active' : '';
+        return `<a href="${JEDI_BASE}/rings/${r.id}-${r.id === 'r0' ? 'survival' : r.id === 'r1' ? 'sense' : r.id === 'r2' ? 'gate' : r.id === 'r3' ? 'heart' : r.id === 'r4' ? 'voice' : r.id === 'r5' ? 'identity' : r.id === 'r6' ? 'observer' : 'network'}/" class="ring-dot${active}" style="--ring:${r.c};background:${r.c};" title="${r.n}"></a>`;
+      }).join('');
+    }
+  },
+
+  // Storage API
+  api: {
+    storage: {
+      get(key) { return localStorage.getItem('jedi:' + key); },
+      set(key, val) { localStorage.setItem('jedi:' + key, val); },
+      remove(key) { localStorage.removeItem('jedi:' + key); },
+      export() {
+        const data = {};
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i);
+          if (k.startsWith('jedi:')) data[k] = localStorage.getItem(k);
+        }
+        return data;
+      }
+    }
+  }
+};
+</script>

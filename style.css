@@ -1,0 +1,115 @@
+/* JEDI — Shared Theme · 510,510 */
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Instrument+Serif&display=swap');
+
+:root {
+  --void: #050408;
+  --cream: #fff8e7;
+  --r0: #DD2244; --r1: #FF6622; --r2: #FFCC00; --r3: #22CC66;
+  --r4: #2299DD; --r5: #7744DD; --r6: #BB88FF; --r7: #FFD700;
+  --font-mono: 'DM Mono', monospace;
+  --font-serif: 'Instrument Serif', serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--void);
+  color: var(--cream);
+  font-family: var(--font-mono);
+  font-size: 15px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+h1, h2, h3 { font-family: var(--font-serif); font-weight: normal; }
+h1 { font-size: 2.4em; }
+h2 { font-size: 1.6em; }
+a { color: var(--r7); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* Ring Colors */
+.ring-r0, [data-ring="r0"] { --ring: var(--r0); }
+.ring-r1, [data-ring="r1"] { --ring: var(--r1); }
+.ring-r2, [data-ring="r2"] { --ring: var(--r2); }
+.ring-r3, [data-ring="r3"] { --ring: var(--r3); }
+.ring-r4, [data-ring="r4"] { --ring: var(--r4); }
+.ring-r5, [data-ring="r5"] { --ring: var(--r5); }
+.ring-r6, [data-ring="r6"] { --ring: var(--r6); }
+.ring-r7, [data-ring="r7"] { --ring: var(--r7); }
+
+/* Ring dot indicator */
+.ring-dot {
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: var(--ring);
+  display: inline-block;
+}
+.ring-dot.active {
+  animation: pulse 2s ease-in-out infinite;
+  box-shadow: 0 0 8px var(--ring);
+}
+
+/* Layout */
+.container { max-width: 960px; margin: 0 auto; padding: 20px; }
+main { padding: 20px; }
+
+/* Cards */
+.card {
+  background: #0a0a12;
+  border: 1px solid #1a1a2a;
+  border-left: 3px solid var(--ring, var(--r7));
+  padding: 16px;
+  margin: 12px 0;
+}
+.card:hover { border-color: var(--ring, var(--r7)); }
+
+/* Nav */
+#ring-nav {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(5,4,8,0.9);
+  z-index: 100;
+}
+
+/* Buttons */
+.btn {
+  background: var(--ring, var(--r7));
+  color: var(--void);
+  border: none;
+  padding: 8px 20px;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  cursor: pointer;
+}
+.btn:hover { opacity: 0.85; }
+
+/* Animations */
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.3); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  h1 { font-size: 1.8em; }
+  .container { padding: 12px; }
+}
+
+/* Footer */
+footer {
+  text-align: center;
+  padding: 40px 20px;
+  opacity: 0.5;
+  font-size: 12px;
+}
