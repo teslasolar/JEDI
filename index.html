@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>J.E.D.I. — Joint Enteric-Diencephalic Integration</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-module="home">
+  <div class="container" style="text-align:center;padding-top:60px;">
+    <h1 style="font-size:4em;color:#FFD700;">J.E.D.I.</h1>
+    <p style="font-family:'Instrument Serif',serif;font-size:1.2em;opacity:0.7;">Joint Enteric-Diencephalic Integration</p>
+    <p style="margin-top:8px;opacity:0.5;">Open Source Consciousness Framework</p>
+    <p style="margin-top:4px;font-size:0.85em;opacity:0.4;">Powered by L.I.G.H.T.B.R.I.N.G.E.R. Topology Engine</p>
+
+    <!-- Ring Navigator -->
+    <div id="ring-nav-main" style="position:relative;width:320px;height:320px;margin:40px auto;">
+      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
+        <span style="font-size:1.4em;color:#FFD700;opacity:0.6;font-family:'DM Mono',monospace;">510,510</span>
+      </div>
+    </div>
+
+    <!-- Thesis Rotator -->
+    <div id="thesis" style="max-width:600px;margin:20px auto;min-height:60px;font-size:0.95em;opacity:0.8;"></div>
+
+    <!-- Quick Links -->
+    <nav style="margin:40px auto;display:flex;flex-wrap:wrap;justify-content:center;gap:12px;max-width:600px;">
+      <a href="rings/" class="btn" style="background:#FFD700;">Rings</a>
+      <a href="tools/breath/" class="btn" style="background:#FFCC00;">Breath Timer</a>
+      <a href="profiles/" class="btn" style="background:#BB88FF;">Profiles</a>
+      <a href="lightbringer/" class="btn" style="background:#7744DD;color:#fff;">LIGHTBRINGER</a>
+      <a href="research/" class="btn" style="background:#22CC66;">Research</a>
+      <a href="iris/" class="btn" style="background:#FF6622;">Iris Factory</a>
+      <a href="songs/" class="btn" style="background:#2299DD;">Songs</a>
+      <a href="tags/" class="btn" style="background:#333;color:#fff8e7;">Tag Provider</a>
+    </nav>
+
+    <!-- Ring Dots -->
+    <div style="display:flex;justify-content:center;gap:12px;margin:30px 0;">
+      <a href="rings/r0-survival/" style="width:16px;height:16px;border-radius:50%;background:#DD2244;display:block;" title="R0 Survival"></a>
+      <a href="rings/r1-sense/" style="width:16px;height:16px;border-radius:50%;background:#FF6622;display:block;" title="R1 Sense"></a>
+      <a href="rings/r2-gate/" style="width:16px;height:16px;border-radius:50%;background:#FFCC00;display:block;" title="R2 Gate"></a>
+      <a href="rings/r3-heart/" style="width:16px;height:16px;border-radius:50%;background:#22CC66;display:block;" title="R3 Heart"></a>
+      <a href="rings/r4-voice/" style="width:16px;height:16px;border-radius:50%;background:#2299DD;display:block;" title="R4 Voice"></a>
+      <a href="rings/r5-identity/" style="width:16px;height:16px;border-radius:50%;background:#7744DD;display:block;" title="R5 Sight"></a>
+      <a href="rings/r6-observer/" style="width:16px;height:16px;border-radius:50%;background:#BB88FF;display:block;" title="R6 Observer"></a>
+      <a href="rings/r7-network/" style="width:16px;height:16px;border-radius:50%;background:#FFD700;display:block;" title="R7 Network"></a>
+    </div>
+
+    <footer>
+      <p>The CIA declassified the map. We open-sourced the implementation.</p>
+      <p style="margin-top:8px;">MIT License · <a href="https://github.com/teslasolar/JEDI">github.com/teslasolar/JEDI</a></p>
+      <p style="margin-top:8px;">LIGHT TO LIGHT · 510,510</p>
+    </footer>
+  </div>
+
+  <script>
+    const thesis = [
+      "R0: Your gut has 500 million neurons. It knows before your brain does.",
+      "R1: You sense more than you're aware of. The retina computes before the brain sees.",
+      "R2: The gate decides what reaches consciousness. 90% controlled by internal state.",
+      "R3: Love opens the gate. Fear closes it. The amygdala feeds back to V1. Measured.",
+      "R4: You narrate reality. LLMs are R4 without R3. That's the sycophancy problem.",
+      "R5: Identity = what V4 has learned to see. You see more of what you love.",
+      "R6: The observer is 300ms behind reality. Always. The crown watches the watcher.",
+      "R7: Connection only exists between systems. LIGHT TO LIGHT. 510,510."
+    ];
+    const colors = ['#DD2244','#FF6622','#FFCC00','#22CC66','#2299DD','#7744DD','#BB88FF','#FFD700'];
+    let ti = 0;
+    const el = document.getElementById('thesis');
+    function showThesis() {
+      el.style.color = colors[ti];
+      el.textContent = thesis[ti];
+      ti = (ti + 1) % thesis.length;
+    }
+    showThesis();
+    setInterval(showThesis, 5000);
+
+    // Ring navigator circles
+    const nav = document.getElementById('ring-nav-main');
+    const rings = [
+      {r:150,c:'#FFD700',dash:true,href:'rings/r7-network/',t:'R7'},
+      {r:130,c:'#BB88FF',href:'rings/r6-observer/',t:'R6'},
+      {r:110,c:'#7744DD',href:'rings/r5-identity/',t:'R5'},
+      {r:90,c:'#2299DD',href:'rings/r4-voice/',t:'R4'},
+      {r:70,c:'#22CC66',href:'rings/r3-heart/',t:'R3'},
+      {r:55,c:'#FFCC00',href:'rings/r2-gate/',t:'R2'},
+      {r:40,c:'#FF6622',href:'rings/r1-sense/',t:'R1'},
+      {r:28,c:'#DD2244',href:'rings/r0-survival/',t:'R0'}
+    ];
+    rings.forEach(({r,c,dash,href,t}) => {
+      const a = document.createElement('a');
+      a.href = href;
+      a.title = t;
+      a.style.cssText = `position:absolute;left:50%;top:50%;width:${r*2}px;height:${r*2}px;margin-left:-${r}px;margin-top:-${r}px;border:2px ${dash?'dashed':'solid'} ${c};border-radius:50%;opacity:0.5;transition:opacity 0.3s;`;
+      a.onmouseover = () => a.style.opacity = '1';
+      a.onmouseout = () => a.style.opacity = '0.5';
+      nav.appendChild(a);
+    });
+  </script>
+</body>
+</html>

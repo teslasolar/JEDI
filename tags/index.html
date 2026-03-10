@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tag Provider — PROJECT JEDI</title>
+  <link rel="stylesheet" href="/JEDI/style.css">
+  <style>
+    .query-box { width: 100%; min-height: 80px; background: #0a0a0f; color: #fff8e7; border: 1px solid #333; padding: 12px; font-family: 'DM Mono', monospace; font-size: 14px; resize: vertical; }
+    .btn { background: #FFD700; color: #050408; border: none; padding: 8px 20px; cursor: pointer; font-family: 'DM Mono', monospace; font-weight: bold; margin: 4px; }
+    .btn:hover { opacity: 0.85; }
+    .btn.danger { background: #DD2244; color: #fff; }
+    .results { margin-top: 16px; overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { background: #1a1a2a; padding: 8px; text-align: left; border-bottom: 2px solid #FFD700; }
+    td { padding: 6px 8px; border-bottom: 1px solid #222; }
+    tr:hover td { background: #111122; }
+    .status { padding: 8px; margin: 8px 0; border-left: 3px solid #22CC66; background: #0a0a0f; }
+    .status.error { border-color: #DD2244; }
+    .presets { display: flex; flex-wrap: wrap; gap: 4px; margin: 8px 0; }
+    .preset { background: #1a1a2a; color: #fff8e7; border: 1px solid #333; padding: 4px 10px; cursor: pointer; font-size: 12px; }
+    .preset:hover { border-color: #FFD700; }
+    h1 { font-family: 'Instrument Serif', serif; color: #FFD700; }
+    h2 { font-family: 'Instrument Serif', serif; color: #BB88FF; font-size: 1.1em; }
+  </style>
+</head>
+<body data-module="tags" style="background:#050408;color:#fff8e7;padding:20px;max-width:960px;margin:0 auto;">
+  <h1>Tag Provider</h1>
+  <p>Self-queryable SQLite directory tag database. Type SQL below.</p>
+
+  <h2>Query</h2>
+  <textarea class="query-box" id="sql" spellcheck="false">SELECT * FROM directories LIMIT 20;</textarea>
+  <div>
+    <button class="btn" onclick="runQuery()">Run Query</button>
+    <button class="btn" onclick="runExec()">Execute (INSERT/UPDATE)</button>
+    <button class="btn" onclick="seedDB()">Seed from MANIFEST</button>
+    <button class="btn danger" onclick="resetDB()">Reset DB</button>
+  </div>
+
+  <h2>Presets</h2>
+  <div class="presets">
+    <button class="preset" onclick="setQ('SELECT * FROM directories;')">All Dirs</button>
+    <button class="preset" onclick="setQ('SELECT * FROM tags ORDER BY dir_path;')">All Tags</button>
+    <button class="preset" onclick="setQ('SELECT * FROM scripts;')">All Scripts</button>
+    <button class="preset" onclick="setQ(`SELECT d.path, d.ring, t.key, t.value FROM directories d JOIN tags t ON d.path = t.dir_path WHERE d.ring IS NOT NULL ORDER BY d.ring;`)">Ring Tags</button>
+    <button class="preset" onclick="setQ(`SELECT dir_path, COUNT(*) as tag_count FROM tags GROUP BY dir_path ORDER BY tag_count DESC;`)">Tag Counts</button>
+    <button class="preset" onclick="setQ(`INSERT INTO scripts (dir_path, name, content) VALUES ('/', 'hello', 'return \"Hello from JEDI 510510\";');`)">Add Script</button>
+    <button class="preset" onclick="setQ(`SELECT * FROM scripts WHERE dir_path='/';`)">Get Scripts</button>
+  </div>
+
+  <div id="status"></div>
+  <div class="results" id="results"></div>
+
+  <h2>API Reference</h2>
+  <pre style="background:#0a0a0f;padding:12px;font-size:12px;overflow-x:auto;">
+// Initialize
+const tp = new TagProvider();
+await tp.init();
+
+// Query (SELECT)
+tp.query("SELECT * FROM tags WHERE key='ring'");
+
+// Execute (INSERT/UPDATE/DELETE)
+tp.run("INSERT INTO tags ...", [params]);
+
+// Directory ops
+tp.addDir('/rings/r0/', 'R0', 'survival', 'R0 Survival');
+
+// Tag ops
+tp.setTag('/rings/r0/', 'prime', '2');
+tp.getTag('/rings/r0/', 'prime'); // → '2'
+
+// Script ops
+tp.addScript('/', 'hello', 'return 42;');
+tp.execScript('/', 'hello'); // → {ok:true, result:42}
+
+// MCP tool
+const tool = tp.asTool();
+
+// Seed from MANIFEST.json
+await tp.seedFromManifest();
+  </pre>
+
+  <footer style="margin-top:40px;text-align:center;opacity:0.5;font-size:12px;">
+    LIGHT TO LIGHT · 510,510
+  </footer>
+
+  <script src="https://sql.js.org/dist/sql-wasm.js"></script>
+  <script src="/JEDI/tags/api.js"></script>
+  <script>
+    let tp;
+
+    async function boot() {
+      try {
+        tp = new TagProvider();
+        await tp.init();
+        showStatus('Tag Provider ready. DB loaded.');
+        runQuery();
+      } catch (e) {
+        showStatus('Init error: ' + e.message, true);
+      }
+    }
+
+    function setQ(sql) { document.getElementById('sql').value = sql; }
+
+    function runQuery() {
+      const sql = document.getElementById('sql').value.trim();
+      if (!sql) return;
+      const r = tp.query(sql);
+      if (r.ok) {
+        renderTable(r.data);
+        showStatus(`${r.data.length} row(s) returned.`);
+      } else {
+        showStatus(r.error, true);
+      }
+    }
+
+    function runExec() {
+      const sql = document.getElementById('sql').value.trim();
+      if (!sql) return;
+      const r = tp.run(sql);
+      if (r.ok) {
+        showStatus(`Executed. ${r.changes} row(s) affected.`);
+      } else {
+        showStatus(r.error, true);
+      }
+    }
+
+    async function seedDB() {
+      const r = await tp.seedFromManifest();
+      showStatus(r.ok ? 'Seeded from MANIFEST.json' : 'Seed error: ' + r.error, !r.ok);
+      if (r.ok) { setQ('SELECT * FROM directories;'); runQuery(); }
+    }
+
+    function resetDB() {
+      if (!confirm('Reset entire tag database?')) return;
+      localStorage.removeItem('jedi-tags');
+      location.reload();
+    }
+
+    function renderTable(rows) {
+      const el = document.getElementById('results');
+      if (!rows.length) { el.innerHTML = '<p style="opacity:0.5;">No results.</p>'; return; }
+      const cols = Object.keys(rows[0]);
+      let html = '<table><tr>' + cols.map(c => `<th>${c}</th>`).join('') + '</tr>';
+      for (const row of rows) {
+        html += '<tr>' + cols.map(c => `<td>${row[c] ?? ''}</td>`).join('') + '</tr>';
+      }
+      html += '</table>';
+      el.innerHTML = html;
+    }
+
+    function showStatus(msg, isError = false) {
+      document.getElementById('status').innerHTML =
+        `<div class="status${isError ? ' error' : ''}">${msg}</div>`;
+    }
+
+    boot();
+  </script>
+</body>
+</html>
