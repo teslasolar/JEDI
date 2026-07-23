@@ -7,11 +7,131 @@
   <link rel="stylesheet" href="/JEDI/style.css">
 </head>
 <body data-module="dimensions">
-  <div class="container">
-    <p><a href="/JEDI/tools/">&larr; Back</a></p>
-    <h1 style="color:var(--ring, var(--r7));">127 Dimensions</h1>
-    <p>Module stub. Build prompt pending.</p>
-    <footer>LIGHT TO LIGHT · 510,510</footer>
+  <nav id="ring-nav"></nav>
+  <div class="container" style="text-align:center;">
+    <p style="text-align:left;"><a href="/JEDI/tools/">&larr; Tools</a></p>
+    <h1 style="color:#7744DD;">127 Dimensions</h1>
+    <p>2<sup>7</sup> - 1 = 127. The Mersenne prime. Visualizing dimensional projection.</p>
+
+    <canvas id="dim-canvas" width="600" height="600" style="display:block;margin:20px auto;background:#020204;cursor:grab;"></canvas>
+
+    <div style="margin:16px 0;">
+      <label style="font-size:12px;opacity:0.6;">Dimensions: </label>
+      <input type="range" id="dim-slider" min="3" max="127" value="7" oninput="updateDims(this.value)">
+      <span id="dim-val" style="color:#7744DD;">7</span>
+    </div>
+    <div style="margin:8px 0;">
+      <label style="font-size:12px;opacity:0.6;">Speed: </label>
+      <input type="range" id="speed-slider" min="1" max="20" value="5">
+    </div>
+
+    <footer>LIGHT TO LIGHT &middot; 510,510</footer>
   </div>
+  <script src="/JEDI/turtle.html" type="module"></script>
+  <script>
+    const c = document.getElementById('dim-canvas');
+    const ctx = c.getContext('2d');
+    let dims = 7, rotX = 0, rotY = 0, dragging = false;
+
+    c.addEventListener('mousedown', () => dragging = true);
+    c.addEventListener('mouseup', () => dragging = false);
+    c.addEventListener('mouseleave', () => dragging = false);
+    c.addEventListener('mousemove', e => {
+      if (dragging) { rotX += e.movementX * 0.01; rotY += e.movementY * 0.01; }
+    });
+
+    function updateDims(v) {
+      dims = parseInt(v);
+      document.getElementById('dim-val').textContent = v;
+    }
+
+    function generateHypercubeVertices(n) {
+      const verts = [];
+      const total = Math.min(Math.pow(2, n), 1024);
+      for (let i = 0; i < total; i++) {
+        const coords = [];
+        for (let d = 0; d < n; d++) {
+          coords.push((i >> d) & 1 ? 1 : -1);
+        }
+        verts.push(coords);
+      }
+      return verts;
+    }
+
+    function project(coords, t) {
+      let x = 0, y = 0, z = 0;
+      const n = coords.length;
+      for (let i = 0; i < n; i++) {
+        const angle = (i / n) * Math.PI * 2 + t * (i + 1) * 0.1;
+        x += coords[i] * Math.cos(angle) / Math.sqrt(n);
+        y += coords[i] * Math.sin(angle) / Math.sqrt(n);
+        z += coords[i] * Math.cos(angle + Math.PI/4) / Math.sqrt(n);
+      }
+      const cos_rx = Math.cos(rotX), sin_rx = Math.sin(rotX);
+      const cos_ry = Math.cos(rotY), sin_ry = Math.sin(rotY);
+      const y1 = y * cos_ry - z * sin_ry;
+      const z1 = y * sin_ry + z * cos_ry;
+      const x1 = x * cos_rx - z1 * sin_rx;
+      return { x: x1, y: y1 };
+    }
+
+    let t = 0;
+    function draw() {
+      const speed = parseInt(document.getElementById('speed-slider').value) / 500;
+      ctx.fillStyle = 'rgba(2,2,4,0.15)';
+      ctx.fillRect(0, 0, c.width, c.height);
+
+      const verts = generateHypercubeVertices(Math.min(dims, 10));
+      const cx = c.width / 2, cy = c.height / 2;
+      const scale = 120;
+      const colors = ['#DD2244','#FF6622','#FFCC00','#22CC66','#2299DD','#7744DD','#BB88FF','#FFD700'];
+
+      // Draw edges (connect vertices differing by 1 bit, limited)
+      if (verts.length <= 256) {
+        ctx.globalAlpha = 0.08;
+        ctx.lineWidth = 1;
+        for (let i = 0; i < verts.length; i++) {
+          const p1 = project(verts[i], t);
+          for (let d = 0; d < Math.min(dims, 10); d++) {
+            const j = i ^ (1 << d);
+            if (j > i && j < verts.length) {
+              const p2 = project(verts[j], t);
+              ctx.beginPath();
+              ctx.moveTo(cx + p1.x * scale, cy + p1.y * scale);
+              ctx.lineTo(cx + p2.x * scale, cy + p2.y * scale);
+              ctx.strokeStyle = colors[d % 8];
+              ctx.stroke();
+            }
+          }
+        }
+      }
+
+      // Draw vertices
+      ctx.globalAlpha = 0.7;
+      for (let i = 0; i < verts.length; i++) {
+        const p = project(verts[i], t);
+        ctx.beginPath();
+        ctx.arc(cx + p.x * scale, cy + p.y * scale, 2, 0, Math.PI * 2);
+        ctx.fillStyle = colors[i % 8];
+        ctx.fill();
+      }
+
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = '#7744DD';
+      ctx.font = '13px DM Mono, monospace';
+      ctx.textAlign = 'left';
+      ctx.fillText(dims + 'D hypercube — ' + verts.length + ' vertices', 16, 28);
+      ctx.fillStyle = '#fff8e7';
+      ctx.globalAlpha = 0.3;
+      ctx.fillText('drag to rotate', 16, c.height - 16);
+      ctx.globalAlpha = 1;
+
+      t += speed;
+      if (!dragging) { rotX += 0.001; rotY += 0.0005; }
+      requestAnimationFrame(draw);
+    }
+    draw();
+    window.turtle?.init?.({ module: 'dimensions' });
+  </script>
 </body>
 </html>

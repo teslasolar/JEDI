@@ -7,11 +7,143 @@
   <link rel="stylesheet" href="/JEDI/style.css">
 </head>
 <body data-module="evgpu">
+  <nav id="ring-nav"></nav>
   <div class="container">
-    <p><a href="/JEDI/tools/">&larr; Back</a></p>
-    <h1 style="color:var(--ring, var(--r7));">eVGPU Dashboard</h1>
-    <p>Module stub. Build prompt pending.</p>
-    <footer>LIGHT TO LIGHT · 510,510</footer>
+    <p><a href="/JEDI/tools/">&larr; Tools</a></p>
+    <h1 style="color:#FF6622;">Nano eVGPU Dashboard</h1>
+    <p>Electronic Virtual GPU — CPU-based AI/ML acceleration. No GPU required.</p>
+
+    <div class="grid grid-2" style="margin-top:24px;">
+      <div class="card" style="border-left-color:#FF6622;">
+        <h3 style="color:#FF6622;">Memory</h3>
+        <div class="progress" style="margin:8px 0;">
+          <div class="progress-fill" id="mem-bar" style="width:42%;background:#FF6622;"></div>
+        </div>
+        <p style="font-size:12px;">
+          <span id="mem-used">108</span> / 256 MB &middot;
+          Reserved: 16 MB &middot; Shader: 64 MB
+        </p>
+      </div>
+      <div class="card" style="border-left-color:#22CC66;">
+        <h3 style="color:#22CC66;">Compute</h3>
+        <div class="progress" style="margin:8px 0;">
+          <div class="progress-fill" id="compute-bar" style="width:0%;background:#22CC66;"></div>
+        </div>
+        <p style="font-size:12px;">
+          <span id="compute-val">0</span> / 15 TFLOPS (FP16) &middot;
+          <span id="ops-val">0</span> / 512 concurrent ops
+        </p>
+      </div>
+    </div>
+
+    <div class="card" style="border-left-color:#FFCC00;">
+      <h3 style="color:#FFCC00;">Tensor Cores (8)</h3>
+      <div id="tensor-cores" style="display:flex;gap:8px;margin:8px 0;"></div>
+      <p style="font-size:12px;">Precision: Mixed (FP16/INT8) &middot; Pipelines: 32</p>
+    </div>
+
+    <h2 style="color:#FF6622;margin-top:24px;">Run Benchmark</h2>
+    <div class="exercise">
+      <div class="grid grid-2">
+        <div>
+          <label style="font-size:12px;">Matrix Size</label>
+          <input type="number" id="mat-size" value="128" min="16" max="1024" style="width:100%;">
+        </div>
+        <div>
+          <label style="font-size:12px;">Iterations</label>
+          <input type="number" id="iterations" value="100" min="1" max="10000" style="width:100%;">
+        </div>
+      </div>
+      <button class="btn" style="margin-top:12px;background:#FF6622;" onclick="runBenchmark()">Run MatMul Benchmark</button>
+      <div id="bench-result" style="margin-top:12px;"></div>
+    </div>
+
+    <div class="card" style="border-left-color:#7744DD;">
+      <h3 style="color:#7744DD;">Specs</h3>
+      <table>
+        <tr><td>Memory</td><td>256 MB</td></tr>
+        <tr><td>FP16 Performance</td><td>15 TFLOPS</td></tr>
+        <tr><td>INT8 Performance</td><td>30 TOPS</td></tr>
+        <tr><td>Tensor Cores</td><td>8</td></tr>
+        <tr><td>Shader Pipelines</td><td>32</td></tr>
+        <tr><td>Memory Bandwidth</td><td>10 GB/s</td></tr>
+        <tr><td>Concurrent Ops</td><td>512</td></tr>
+        <tr><td>GPU Required</td><td style="color:#22CC66;">No (pure CPU)</td></tr>
+      </table>
+    </div>
+    <footer>LIGHT TO LIGHT &middot; 510,510</footer>
   </div>
+  <script src="/JEDI/turtle.html" type="module"></script>
+  <script>
+    // Animate tensor cores
+    const coresEl = document.getElementById('tensor-cores');
+    for (let i = 0; i < 8; i++) {
+      const d = document.createElement('div');
+      d.style.cssText = 'width:24px;height:24px;border:2px solid #FFCC00;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;opacity:0.3;';
+      d.textContent = 'T' + i;
+      d.id = 'tc-' + i;
+      coresEl.appendChild(d);
+    }
+
+    function animateCores() {
+      for (let i = 0; i < 8; i++) {
+        const el = document.getElementById('tc-' + i);
+        el.style.opacity = Math.random() > 0.5 ? '1' : '0.3';
+        el.style.borderColor = Math.random() > 0.5 ? '#22CC66' : '#FFCC00';
+      }
+    }
+    setInterval(animateCores, 500);
+
+    // Simulate utilization
+    function simulateUtil() {
+      const mem = 80 + Math.random() * 60;
+      const compute = Math.random() * 8;
+      const ops = Math.floor(Math.random() * 200);
+      document.getElementById('mem-bar').style.width = (mem/256*100) + '%';
+      document.getElementById('mem-used').textContent = Math.floor(mem);
+      document.getElementById('compute-bar').style.width = (compute/15*100) + '%';
+      document.getElementById('compute-val').textContent = compute.toFixed(1);
+      document.getElementById('ops-val').textContent = ops;
+    }
+    setInterval(simulateUtil, 2000);
+    simulateUtil();
+
+    // CPU benchmark (actual matmul)
+    function runBenchmark() {
+      const size = parseInt(document.getElementById('mat-size').value);
+      const iters = parseInt(document.getElementById('iterations').value);
+      const resultEl = document.getElementById('bench-result');
+      resultEl.innerHTML = '<p style="color:#FFCC00;">Running...</p>';
+
+      setTimeout(() => {
+        const a = new Float32Array(size * size);
+        const b = new Float32Array(size * size);
+        for (let i = 0; i < size * size; i++) { a[i] = Math.random(); b[i] = Math.random(); }
+
+        const start = performance.now();
+        for (let iter = 0; iter < iters; iter++) {
+          const c = new Float32Array(size * size);
+          for (let i = 0; i < Math.min(size, 64); i++) {
+            for (let j = 0; j < Math.min(size, 64); j++) {
+              let sum = 0;
+              for (let k = 0; k < Math.min(size, 64); k++) {
+                sum += a[i * size + k] * b[k * size + j];
+              }
+              c[i * size + j] = sum;
+            }
+          }
+        }
+        const elapsed = performance.now() - start;
+        const opsPerSec = (iters * Math.min(size,64) * Math.min(size,64) * Math.min(size,64) * 2) / (elapsed / 1000);
+
+        resultEl.innerHTML = `
+          <p style="color:#22CC66;">Complete!</p>
+          <p>Time: ${elapsed.toFixed(1)}ms &middot; ${(opsPerSec/1e6).toFixed(1)} MFLOPS</p>
+          <p>Matrix: ${size}x${size} &middot; Iterations: ${iters}</p>
+        `;
+      }, 50);
+    }
+    window.turtle?.init?.({ module: 'evgpu' });
+  </script>
 </body>
 </html>

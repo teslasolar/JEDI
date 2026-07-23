@@ -3,15 +3,128 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>R3 · HEART — PROJECT JEDI</title>
+  <title>R3 HEART — PROJECT JEDI</title>
   <link rel="stylesheet" href="/JEDI/style.css">
 </head>
 <body data-ring="r3" data-module="r3-heart">
+  <nav id="ring-nav"></nav>
   <div class="container">
-    <p><a href="/JEDI/rings/">&larr; Back</a></p>
-    <h1 style="color:var(--ring, var(--r7));">R3 · HEART</h1>
-    <p>Module stub. Build prompt pending.</p>
-    <footer>LIGHT TO LIGHT · 510,510</footer>
+    <p><a href="/JEDI/rings/">&larr; All Rings</a></p>
+    <div style="display:flex;align-items:center;gap:16px;margin:20px 0;">
+      <div class="gauge" style="border-color:#22CC66;font-size:1.6em;">R3</div>
+      <div>
+        <h1 style="color:#22CC66;">HEART</h1>
+        <p style="opacity:0.6;">V1/amygdala &middot; Heart &middot; p=7 &middot; 275Hz</p>
+      </div>
+    </div>
+    <blockquote style="border-left:3px solid #22CC66;padding:12px;font-style:italic;">"I FEEL"</blockquote>
+
+    <h2 style="color:#22CC66;margin-top:24px;">Overview</h2>
+    <p>The amygdala feeds back to V1 — <strong>love literally changes what you see.</strong> This is measured neuroscience, not metaphor. R3 is affect, empathy, the flaming rose that opens what force could not. The Klein bottle maps here — love has no inside/outside boundary.</p>
+
+    <h2 style="color:#22CC66;margin-top:24px;">Exercise: Flaming Rose Meditation</h2>
+    <div class="exercise" style="text-align:center;">
+      <canvas id="rose-canvas" width="300" height="300" style="display:block;margin:0 auto;"></canvas>
+      <div id="rose-phase" style="margin:12px 0;font-size:1.1em;color:#22CC66;">Visualize a rose at your heart center.</div>
+      <div id="rose-timer" style="font-size:2em;font-family:var(--font-mono);">3:00</div>
+      <button class="btn" style="background:#22CC66;margin-top:8px;" onclick="startRose()">Begin Meditation</button>
+    </div>
+
+    <h2 style="color:#22CC66;margin-top:24px;">Exercise: Affect Calibration</h2>
+    <div class="exercise">
+      <p>How does your heart feel right now? Check all that apply:</p>
+      <div class="grid grid-3" style="margin:12px 0;">
+        <label class="card" style="border-left-color:#22CC66;cursor:pointer;"><input type="checkbox" value="open"> Open</label>
+        <label class="card" style="border-left-color:#22CC66;cursor:pointer;"><input type="checkbox" value="warm"> Warm</label>
+        <label class="card" style="border-left-color:#22CC66;cursor:pointer;"><input type="checkbox" value="expansive"> Expansive</label>
+        <label class="card" style="border-left-color:#DD2244;cursor:pointer;"><input type="checkbox" value="tight"> Tight</label>
+        <label class="card" style="border-left-color:#DD2244;cursor:pointer;"><input type="checkbox" value="guarded"> Guarded</label>
+        <label class="card" style="border-left-color:#FFCC00;cursor:pointer;"><input type="checkbox" value="neutral"> Neutral</label>
+      </div>
+      <button class="btn" style="background:#22CC66;" onclick="logAffect()">Log Heart State</button>
+    </div>
+
+    <h2 style="color:#22CC66;margin-top:24px;">Journal</h2>
+    <textarea id="journal" style="width:100%;min-height:120px;" placeholder="What did the rose look like? What color? Did it change? What did you feel?"></textarea>
+    <button class="btn" style="background:#22CC66;margin-top:8px;" onclick="saveJournal()">Save Entry</button>
+    <div id="journal-entries" style="margin-top:16px;"></div>
+    <footer>LIGHT TO LIGHT &middot; 510,510</footer>
   </div>
+  <script src="/JEDI/turtle.html" type="module"></script>
+  <script>
+    const rc=document.getElementById('rose-canvas').getContext('2d');
+    let roseT=0, roseTimer=null, roseCountdown=180;
+    const phases=['Visualize a rose at your heart center.','See the petals begin to glow.','Feel warmth radiating from the rose.','The rose is now a flame. Not burning — illuminating.','The flame expands outward from your heart.','Let the light reach everything around you.'];
+
+    function drawRose(t){
+      const W=300,cx=W/2,cy=W/2;
+      rc.fillStyle='rgba(5,4,8,0.1)';rc.fillRect(0,0,W,W);
+      const petals=7;
+      for(let i=0;i<petals;i++){
+        const angle=(i/petals)*Math.PI*2+t*0.5;
+        const r=40+Math.sin(t*2+i)*15;
+        const px=cx+Math.cos(angle)*r*0.5;
+        const py=cy+Math.sin(angle)*r*0.5;
+        rc.beginPath();
+        rc.ellipse(px,py,r,r*0.4,angle,0,Math.PI*2);
+        const glow=0.3+Math.sin(t*3+i*0.5)*0.2;
+        rc.fillStyle=`rgba(34,204,102,${glow})`;
+        rc.fill();
+      }
+      // Center flame
+      const flameR=15+Math.sin(t*4)*5;
+      const grad=rc.createRadialGradient(cx,cy,0,cx,cy,flameR*3);
+      grad.addColorStop(0,'rgba(255,220,100,0.8)');
+      grad.addColorStop(0.5,'rgba(34,204,102,0.4)');
+      grad.addColorStop(1,'rgba(34,204,102,0)');
+      rc.beginPath();rc.arc(cx,cy,flameR*3,0,Math.PI*2);
+      rc.fillStyle=grad;rc.fill();
+    }
+
+    function startRose(){
+      if(roseTimer){clearInterval(roseTimer);roseTimer=null;return;}
+      roseCountdown=180;roseT=0;
+      roseTimer=setInterval(()=>{
+        roseCountdown--;roseT+=0.02;
+        document.getElementById('rose-timer').textContent=Math.floor(roseCountdown/60)+':'+String(roseCountdown%60).padStart(2,'0');
+        const phaseIdx=Math.min(Math.floor((180-roseCountdown)/30),phases.length-1);
+        document.getElementById('rose-phase').textContent=phases[phaseIdx];
+        drawRose(roseT);
+        if(roseCountdown<=0){clearInterval(roseTimer);roseTimer=null;document.getElementById('rose-phase').textContent='The rose remains. It always was.';}
+      },1000);
+    }
+
+    // Animate idle rose
+    let idleT=0;
+    function idleDraw(){drawRose(idleT);idleT+=0.01;if(!roseTimer)requestAnimationFrame(idleDraw);}
+    idleDraw();
+
+    function logAffect(){
+      const checked=[...document.querySelectorAll('.exercise input:checked')].map(i=>i.value);
+      if(!checked.length)return;
+      const log=JSON.parse(localStorage.getItem('jedi:R3:affect')||'[]');
+      log.unshift({t:new Date().toISOString(),states:checked});
+      localStorage.setItem('jedi:R3:affect',JSON.stringify(log));
+      alert('Heart state logged: '+checked.join(', '));
+    }
+
+    function saveJournal(){
+      const txt=document.getElementById('journal').value.trim();
+      if(!txt)return;
+      const entries=JSON.parse(localStorage.getItem('jedi:R3:journal')||'[]');
+      entries.unshift({t:new Date().toISOString(),text:txt});
+      localStorage.setItem('jedi:R3:journal',JSON.stringify(entries));
+      document.getElementById('journal').value='';
+      renderEntries();
+    }
+    function renderEntries(){
+      const entries=JSON.parse(localStorage.getItem('jedi:R3:journal')||'[]');
+      document.getElementById('journal-entries').innerHTML=entries.slice(0,10).map(e=>
+        '<div class="card" style="border-left-color:#22CC66;"><small style="opacity:0.5;">'+new Date(e.t).toLocaleString()+'</small><p>'+e.text+'</p></div>'
+      ).join('');
+    }
+    renderEntries();
+    window.turtle?.init?.({ring:'r3',module:'r3-heart'});
+  </script>
 </body>
 </html>

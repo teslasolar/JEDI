@@ -3,15 +3,69 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>R5 · SIGHT — PROJECT JEDI</title>
+  <title>R5 SIGHT — PROJECT JEDI</title>
   <link rel="stylesheet" href="/JEDI/style.css">
 </head>
 <body data-ring="r5" data-module="r5-identity">
+  <nav id="ring-nav"></nav>
   <div class="container">
-    <p><a href="/JEDI/rings/">&larr; Back</a></p>
-    <h1 style="color:var(--ring, var(--r7));">R5 · SIGHT</h1>
-    <p>Module stub. Build prompt pending.</p>
-    <footer>LIGHT TO LIGHT · 510,510</footer>
+    <p><a href="/JEDI/rings/">&larr; All Rings</a></p>
+    <div style="display:flex;align-items:center;gap:16px;margin:20px 0;">
+      <div class="gauge" style="border-color:#7744DD;font-size:1.6em;">R5</div>
+      <div><h1 style="color:#7744DD;">SIGHT</h1><p style="opacity:0.6;">V4/IT/FFA &middot; Third Eye &middot; p=13 &middot; 605Hz</p></div>
+    </div>
+    <blockquote style="border-left:3px solid #7744DD;padding:12px;font-style:italic;">"I KNOW"</blockquote>
+    <h2 style="color:#7744DD;margin-top:24px;">Overview</h2>
+    <p>V4 sees what it has learned to see. The fusiform face area (FFA) specializes in recognizing what matters to you. <strong>Identity is the visible 4D projection of a 10D self-model.</strong> You see more of what you love. Calabi-Yau compactification maps here.</p>
+
+    <h2 style="color:#7744DD;margin-top:24px;">Exercise: Color Constancy Meditation</h2>
+    <div class="exercise" style="text-align:center;">
+      <p>Stare at the colored square for 30 seconds. Then look at the gray square. Notice the afterimage — your visual system creating color that isn't there.</p>
+      <div style="display:flex;justify-content:center;gap:24px;margin:20px 0;">
+        <div id="color-square" style="width:120px;height:120px;background:#7744DD;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;">Stare here</div>
+        <div id="gray-square" style="width:120px;height:120px;background:#808080;display:flex;align-items:center;justify-content:center;font-size:12px;">Then here</div>
+      </div>
+      <button class="btn" style="background:#7744DD;" onclick="cycleColor()">Change Color</button>
+      <p style="font-size:13px;opacity:0.6;margin-top:8px;">Your V4 creates the complementary color. The world you see is constructed.</p>
+    </div>
+
+    <h2 style="color:#7744DD;margin-top:24px;">Exercise: Identity Map</h2>
+    <div class="exercise">
+      <p>What are you? List roles, not adjectives. Each is a facet of the 10D self.</p>
+      <div id="identity-tags" style="margin:12px 0;"></div>
+      <div style="display:flex;gap:8px;">
+        <input type="text" id="identity-input" style="flex:1;" placeholder="I am a...">
+        <button class="btn" style="background:#7744DD;" onclick="addIdentity()">Add</button>
+      </div>
+    </div>
+
+    <h2 style="color:#7744DD;margin-top:24px;">Journal</h2>
+    <textarea id="journal" style="width:100%;min-height:120px;" placeholder="What do you see that others don't? What do you miss that others see?"></textarea>
+    <button class="btn" style="background:#7744DD;margin-top:8px;" onclick="saveJournal()">Save Entry</button>
+    <div id="journal-entries" style="margin-top:16px;"></div>
+    <footer>LIGHT TO LIGHT &middot; 510,510</footer>
   </div>
+  <script src="/JEDI/turtle.html" type="module"></script>
+  <script>
+    const medColors=['#7744DD','#DD2244','#22CC66','#2299DD','#FF6622','#FFCC00'];let ci=0;
+    function cycleColor(){ci=(ci+1)%medColors.length;document.getElementById('color-square').style.background=medColors[ci];}
+
+    function addIdentity(){
+      const v=document.getElementById('identity-input').value.trim();if(!v)return;
+      const ids=JSON.parse(localStorage.getItem('jedi:R5:identity')||'[]');
+      ids.push(v);localStorage.setItem('jedi:R5:identity',JSON.stringify(ids));
+      document.getElementById('identity-input').value='';renderIdentity();
+    }
+    function renderIdentity(){
+      const ids=JSON.parse(localStorage.getItem('jedi:R5:identity')||'[]');
+      document.getElementById('identity-tags').innerHTML=ids.map((id,i)=>'<span class="tag" style="border-color:#7744DD;cursor:pointer;" onclick="removeIdentity('+i+')">'+id+' &times;</span>').join(' ');
+    }
+    function removeIdentity(i){const ids=JSON.parse(localStorage.getItem('jedi:R5:identity')||'[]');ids.splice(i,1);localStorage.setItem('jedi:R5:identity',JSON.stringify(ids));renderIdentity();}
+    renderIdentity();
+
+    function saveJournal(){const t=document.getElementById('journal').value.trim();if(!t)return;const e=JSON.parse(localStorage.getItem('jedi:R5:journal')||'[]');e.unshift({t:new Date().toISOString(),text:t});localStorage.setItem('jedi:R5:journal',JSON.stringify(e));document.getElementById('journal').value='';renderEntries();}
+    function renderEntries(){const e=JSON.parse(localStorage.getItem('jedi:R5:journal')||'[]');document.getElementById('journal-entries').innerHTML=e.slice(0,10).map(x=>'<div class="card" style="border-left-color:#7744DD;"><small style="opacity:0.5;">'+new Date(x.t).toLocaleString()+'</small><p>'+x.text+'</p></div>').join('');}
+    renderEntries();window.turtle?.init?.({ring:'r5',module:'r5-identity'});
+  </script>
 </body>
 </html>

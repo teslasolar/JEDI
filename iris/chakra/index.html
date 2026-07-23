@@ -3,15 +3,41 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chakra Map — PROJECT JEDI</title>
+  <title>Chakra-Ring Map — PROJECT JEDI</title>
   <link rel="stylesheet" href="/JEDI/style.css">
 </head>
 <body data-module="chakra">
+  <nav id="ring-nav"></nav>
   <div class="container">
-    <p><a href="/JEDI/iris/">&larr; Back</a></p>
-    <h1 style="color:var(--ring, var(--r7));">Chakra Map</h1>
-    <p>Module stub. Build prompt pending.</p>
-    <footer>LIGHT TO LIGHT · 510,510</footer>
+    <p><a href="/JEDI/iris/">&larr; Iris Factory</a></p>
+    <h1 style="color:#22CC66;">Chakra &harr; Ring Map</h1>
+    <p>Mapping the 7 traditional chakra centers to the A.S.S.-OS ring model.</p>
+    <div id="chakra-map" style="margin-top:24px;"></div>
+    <footer>LIGHT TO LIGHT &middot; 510,510</footer>
   </div>
+  <script src="/JEDI/turtle.html" type="module"></script>
+  <script>
+    const map = [
+      {ring:'R0',chakra:'Root (Muladhara)',loc:'Base of spine',color:'#DD2244',neuro:'ENS/gut',element:'Earth'},
+      {ring:'R1',chakra:'Sacral (Svadhisthana)',loc:'Below navel',color:'#FF6622',neuro:'PNS/retina',element:'Water'},
+      {ring:'R2',chakra:'Solar Plexus (Manipura)',loc:'Stomach',color:'#FFCC00',neuro:'LGN/thalamus',element:'Fire'},
+      {ring:'R3',chakra:'Heart (Anahata)',loc:'Heart center',color:'#22CC66',neuro:'V1/amygdala',element:'Air'},
+      {ring:'R4',chakra:'Throat (Vishuddha)',loc:'Throat',color:'#2299DD',neuro:'V2V3/PFC',element:'Ether'},
+      {ring:'R5',chakra:'Third Eye (Ajna)',loc:'Between brows',color:'#7744DD',neuro:'V4/IT/FFA',element:'Light'},
+      {ring:'R6',chakra:'Crown (Sahasrara)',loc:'Top of head',color:'#BB88FF',neuro:'V5MT/parietal',element:'Thought'},
+      {ring:'R7',chakra:'Soul Star (Vyapini)',loc:'Above head',color:'#FFD700',neuro:'mirror/STS/oxy',element:'Connection'}
+    ];
+    document.getElementById('chakra-map').innerHTML = map.map(m => `
+      <div class="card" style="border-left-color:${m.color};display:grid;grid-template-columns:80px 1fr;gap:16px;align-items:center;">
+        <div class="gauge" style="border-color:${m.color};width:60px;height:60px;font-size:0.9em;">${m.ring}</div>
+        <div>
+          <strong style="color:${m.color};">${m.chakra}</strong>
+          <div style="font-size:12px;opacity:0.6;">Location: ${m.loc} &middot; Element: ${m.element}</div>
+          <div style="font-size:12px;opacity:0.6;">Neuro: ${m.neuro}</div>
+        </div>
+      </div>
+    `).join('');
+    window.turtle?.init?.({ module: 'chakra' });
+  </script>
 </body>
 </html>

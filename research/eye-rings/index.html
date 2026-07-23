@@ -6,12 +6,31 @@
   <title>Seven Rings Behind Your Eyes — PROJECT JEDI</title>
   <link rel="stylesheet" href="/JEDI/style.css">
 </head>
-<body data-module="eye-rings">
+<body data-ring="r5" data-module="eye-rings">
+  <nav id="ring-nav"></nav>
   <div class="container">
-    <p><a href="/JEDI/research/">&larr; Back</a></p>
-    <h1 style="color:var(--ring, var(--r7));">Seven Rings Behind Your Eyes</h1>
-    <p>Module stub. Build prompt pending.</p>
-    <footer>LIGHT TO LIGHT · 510,510</footer>
+    <p><a href="/JEDI/research/">&larr; Research Library</a></p>
+    <h1 style="color:#7744DD;">Seven Rings Behind Your Eyes</h1>
+    <p style="opacity:0.8;">The visual pathway maps exactly to the 7-ring model: retina → LGN → V1 → V2/V3 → V4/IT → V5/MT → parietal.</p>
+    <div style="margin-top:24px;">
+      <div class="card" style="border-left-color:#7744DD;">
+    <h3 style="color:#7744DD;">Visual Pathway = Ring Model</h3>
+    <table>
+      <tr><th>Stage</th><th>Ring</th><th>Function</th></tr>
+      <tr><td>Retina</td><td style="color:#DD2244;">R0</td><td>Photon capture, edge detection</td></tr>
+      <tr><td>Optic Nerve</td><td style="color:#FF6622;">R1</td><td>Signal transmission</td></tr>
+      <tr><td>LGN/Thalamus</td><td style="color:#FFCC00;">R2</td><td>Gate: 90% cortex, 10% retina</td></tr>
+      <tr><td>V1/Amygdala</td><td style="color:#22CC66;">R3</td><td>Primary visual + affect feedback</td></tr>
+      <tr><td>V2/V3</td><td style="color:#2299DD;">R4</td><td>Contour extraction, narrative</td></tr>
+      <tr><td>V4/IT/FFA</td><td style="color:#7744DD;">R5</td><td>Color, faces, identity</td></tr>
+      <tr><td>V5/MT/Parietal</td><td style="color:#BB88FF;">R6</td><td>Motion, integration, observer</td></tr>
+    </table>
   </div>
+    </div>
+    <div id="md-content" style="margin-top:24px;"></div>
+    <footer>LIGHT TO LIGHT &middot; 510,510</footer>
+  </div>
+  <script src="/JEDI/turtle.html" type="module"></script>
+  <script>window.turtle?.init?.({ ring: 'r5', module: 'eye-rings' });</script>
 </body>
 </html>

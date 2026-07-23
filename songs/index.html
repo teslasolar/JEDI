@@ -7,11 +7,72 @@
   <link rel="stylesheet" href="/JEDI/style.css">
 </head>
 <body data-module="songs">
+  <nav id="ring-nav"></nav>
   <div class="container">
-    <p><a href="/JEDI/">&larr; Back</a></p>
-    <h1 style="color:var(--ring, var(--r7));">Song Factory</h1>
-    <p>Module stub. Build prompt pending.</p>
-    <footer>LIGHT TO LIGHT · 510,510</footer>
+    <p><a href="/JEDI/">&larr; Home</a></p>
+    <h1 style="color:#FFD700;">Song Factory</h1>
+    <p>Suno prompt library. Each song encodes ring-model concepts in music.</p>
+
+    <div class="grid grid-2" id="song-grid" style="margin-top:24px;"></div>
+
+    <h2 style="color:#FFD700;margin-top:40px;">Create New Prompt</h2>
+    <div class="exercise">
+      <label>Title</label>
+      <input type="text" id="song-title" style="width:100%;margin:4px 0 12px;">
+      <label>Style</label>
+      <input type="text" id="song-style" placeholder="e.g., epic orchestral, cyberpunk, folk" style="width:100%;margin:4px 0 12px;">
+      <label>Lyrics / Prompt</label>
+      <textarea id="song-lyrics" style="width:100%;min-height:200px;" placeholder="Write lyrics here..."></textarea>
+      <button class="btn" style="margin-top:8px;" onclick="saveSong()">Save Prompt</button>
+    </div>
+
+    <footer>LIGHT TO LIGHT &middot; 510,510</footer>
   </div>
+  <script src="/JEDI/turtle.html" type="module"></script>
+  <script>
+    const defaultSongs = [
+      {slug:'thunderdome',title:'Thunderdome',style:'Epic industrial metal',ring:'R0'},
+      {slug:'metatron',title:'Metatron',style:'Orchestral ambient',ring:'R6'},
+      {slug:'light-to-light',title:'Light to Light',style:'Acoustic folk anthem',ring:'R7'},
+      {slug:'deutschlandschwein',title:'Deutschlandschwein',style:'German industrial punk',ring:'R4'},
+      {slug:'translator-kitka',title:'The Translator Kitka',style:'Balkan electronic',ring:'R4'},
+      {slug:'subscribe',title:'Subscribe',style:'Pop satire',ring:'R4'},
+      {slug:'open-gate',title:'The Open Gate',style:'Meditative ambient',ring:'R2'},
+      {slug:'simon-gate',title:'Simon Gate',style:'Children\'s prog rock',ring:'R3'},
+      {slug:'short-bus-wheels',title:'Short Bus Wheels',style:'Punk anthem',ring:'R1'},
+      {slug:'grannys-number',title:'Granny\'s Got Your Number',style:'Country comedy',ring:'R3'}
+    ];
+
+    function renderSongs() {
+      const custom = JSON.parse(localStorage.getItem('jedi:songs') || '[]');
+      const all = [...defaultSongs, ...custom];
+      const colors = {'R0':'#DD2244','R1':'#FF6622','R2':'#FFCC00','R3':'#22CC66','R4':'#2299DD','R5':'#7744DD','R6':'#BB88FF','R7':'#FFD700'};
+      document.getElementById('song-grid').innerHTML = all.map(s => `
+        <a href="/JEDI/songs/${s.slug}/" class="song-card" style="border-left:3px solid ${colors[s.ring] || '#FFD700'};display:block;text-decoration:none;color:var(--cream);">
+          <h3 style="color:${colors[s.ring] || '#FFD700'};">${s.title}</h3>
+          <p style="font-size:12px;opacity:0.6;">${s.style} &middot; ${s.ring}</p>
+          ${s.lyrics ? '<pre class="lyrics">' + s.lyrics + '</pre>' : ''}
+          ${s.lyrics ? '<button class="btn" style="font-size:12px;padding:4px 10px;" onclick="event.preventDefault();navigator.clipboard.writeText(this.previousElementSibling.textContent)">Copy Prompt</button>' : ''}
+        </a>
+      `).join('');
+    }
+
+    function saveSong() {
+      const title = document.getElementById('song-title').value.trim();
+      const style = document.getElementById('song-style').value.trim();
+      const lyrics = document.getElementById('song-lyrics').value.trim();
+      if (!title) return;
+      const custom = JSON.parse(localStorage.getItem('jedi:songs') || '[]');
+      custom.push({ slug: title.toLowerCase().replace(/\s+/g,'-'), title, style, lyrics, ring: 'R4' });
+      localStorage.setItem('jedi:songs', JSON.stringify(custom));
+      document.getElementById('song-title').value = '';
+      document.getElementById('song-style').value = '';
+      document.getElementById('song-lyrics').value = '';
+      renderSongs();
+    }
+
+    renderSongs();
+    window.turtle?.init?.({ module: 'songs' });
+  </script>
 </body>
 </html>

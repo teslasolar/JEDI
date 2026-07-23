@@ -7,11 +7,66 @@
   <link rel="stylesheet" href="/JEDI/style.css">
 </head>
 <body data-module="triple-threat">
+  <nav id="ring-nav"></nav>
   <div class="container">
-    <p><a href="/JEDI/tools/">&larr; Back</a></p>
-    <h1 style="color:var(--ring, var(--r7));">Triple Threat</h1>
-    <p>Module stub. Build prompt pending.</p>
-    <footer>LIGHT TO LIGHT · 510,510</footer>
+    <p><a href="/JEDI/tools/">&larr; Tools</a></p>
+    <h1 style="color:#22CC66;">Triple Threat Generator</h1>
+    <p>Solar + Wind + Hydro combined output simulator.</p>
+
+    <div class="grid grid-3" style="margin-top:24px;">
+      <div class="card" style="border-left-color:#FFCC00;text-align:center;">
+        <h3 style="color:#FFCC00;">Solar</h3>
+        <div class="gauge" style="border-color:#FFCC00;margin:8px auto;"><span id="solar-val">0</span></div>
+        <input type="range" id="solar" min="0" max="100" value="60" oninput="update()" style="width:100%;">
+        <p style="font-size:12px;opacity:0.6;"><span id="solar-kw">0</span> kW</p>
+      </div>
+      <div class="card" style="border-left-color:#2299DD;text-align:center;">
+        <h3 style="color:#2299DD;">Wind</h3>
+        <div class="gauge" style="border-color:#2299DD;margin:8px auto;"><span id="wind-val">0</span></div>
+        <input type="range" id="wind" min="0" max="100" value="40" oninput="update()" style="width:100%;">
+        <p style="font-size:12px;opacity:0.6;"><span id="wind-kw">0</span> kW</p>
+      </div>
+      <div class="card" style="border-left-color:#2299DD;text-align:center;">
+        <h3 style="color:#4488FF;">Hydro</h3>
+        <div class="gauge" style="border-color:#4488FF;margin:8px auto;"><span id="hydro-val">0</span></div>
+        <input type="range" id="hydro" min="0" max="100" value="80" oninput="update()" style="width:100%;">
+        <p style="font-size:12px;opacity:0.6;"><span id="hydro-kw">0</span> kW</p>
+      </div>
+    </div>
+
+    <div class="card" style="border-left-color:#22CC66;text-align:center;margin-top:16px;">
+      <h3 style="color:#22CC66;">Combined Output</h3>
+      <div style="font-size:3em;color:#22CC66;font-family:var(--font-mono);"><span id="total-kw">0</span> kW</div>
+      <div class="progress" style="margin:12px 0;">
+        <div class="progress-fill" id="total-bar" style="width:0%;background:#22CC66;"></div>
+      </div>
+      <p style="font-size:12px;opacity:0.6;">Daily estimate: <span id="daily-kwh">0</span> kWh</p>
+    </div>
+    <footer>LIGHT TO LIGHT &middot; 510,510</footer>
   </div>
+  <script src="/JEDI/turtle.html" type="module"></script>
+  <script>
+    const maxSolar = 50, maxWind = 30, maxHydro = 100;
+    function update() {
+      const s = document.getElementById('solar').value;
+      const w = document.getElementById('wind').value;
+      const h = document.getElementById('hydro').value;
+      const skw = (s / 100 * maxSolar).toFixed(1);
+      const wkw = (w / 100 * maxWind).toFixed(1);
+      const hkw = (h / 100 * maxHydro).toFixed(1);
+      const total = (parseFloat(skw) + parseFloat(wkw) + parseFloat(hkw));
+      document.getElementById('solar-val').textContent = s + '%';
+      document.getElementById('wind-val').textContent = w + '%';
+      document.getElementById('hydro-val').textContent = h + '%';
+      document.getElementById('solar-kw').textContent = skw;
+      document.getElementById('wind-kw').textContent = wkw;
+      document.getElementById('hydro-kw').textContent = hkw;
+      document.getElementById('total-kw').textContent = total.toFixed(1);
+      document.getElementById('total-bar').style.width = (total / (maxSolar+maxWind+maxHydro) * 100) + '%';
+      document.getElementById('daily-kwh').textContent = (total * 24 * 0.3).toFixed(0);
+    }
+    update();
+    window.turtle?.init?.({ module: 'triple-threat' });
+  </script>
 </body>
 </html>
